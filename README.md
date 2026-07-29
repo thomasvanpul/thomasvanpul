@@ -1,4 +1,4 @@
-<!-- Header -->
+ <!-- Header -->
 <div align="center">
 
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=26&duration=2800&pause=1000&color=FFFFFF&center=true&vCenter=true&repeat=true&width=720&lines=Thomas+van+Pul;Design+Engineering+%40+Imperial+College;Building+hardware+%2B+software;Dutch-Malaysian+%C2%B7+from+Penang)](https://git.io/typing-svg)
