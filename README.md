@@ -14,17 +14,48 @@ Mechanical design on one side, software on the other, usually on the same projec
 - TypeScript, React, Node, Python, PostgreSQL
 - Second-year MEng, Dyson School of Design Engineering, Imperial College London
 
----
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+</picture>
+
+### Results
+
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/results-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/results-light.svg">
+  <img alt="12% drag reduction, FOS 1.08, 6% speed-to-power gain, 1st at SatHack, top 150 UK at IMC Prosperity 4" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/results-dark.svg">
+</picture>
+
+</div>
+
+<table>
+<tr><td width="215"><b>Track bike frame</b><br><sub>Al 6061-T6 &#183; 14 months &#183; A*</sub></td>
+<td>Designed, simulated, TIG welded and road tested end to end. CFD-driven tube geometry, Ansys FEA on the bottom-bracket junction, measured on road-test intervals.</td></tr>
+<tr><td width="215"><b>SatHack</b><br><sub>Imperial &#183; 24 hours</sub></td>
+<td>Orbital satellite build, team of four. Built the power budget and the on-board-computer stack.</td></tr>
+<tr><td width="215"><b>DE1 Grand Prix car</b><br><sub>3D-printed electric racer</sub></td>
+<td>Sole owner of the CAD across a four-person team. F1 architecture in Fusion 360, CFD flow visualisation placing the sidepod vents, printed on a Bambu Lab P1S, ESP32 and MicroPython drivetrain.</td></tr>
+<tr><td width="215"><b>IMC Prosperity 4</b><br><sub>Algorithmic trading</sub></td>
+<td>Python market-making algorithms, Black-Scholes pricing with dynamic implied-vol calibration, spread and inventory retuned each round.</td></tr>
+</table>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+</picture>
 
 ### Building now
 
 **BlueBand** &nbsp;&#8250;&nbsp; wearable motion band, in development
-`ESP32-S3` `KiCad` `Fusion 360` `React`
-[`blueband-concept`](https://github.com/thomasvanpul/blueband-concept)
+`ESP32-S3` `KiCad` `Fusion 360` `React` &nbsp;·&nbsp; [`blueband-concept`](https://github.com/thomasvanpul/blueband-concept)
 
 **Numeris** &nbsp;&#8250;&nbsp; personal finance app, in daily use
-`React` `Node` `PostgreSQL` `Plaid` `Yahoo Finance`
-[`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
+`React` `Node` `PostgreSQL` `Plaid` &nbsp;·&nbsp; [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
 
 **HFQ forming research** &nbsp;&#8250;&nbsp; remote work with Dr Nan Li, Dyson School, since Aug 2026
 Hot Form Quench across aluminium, steel, titanium, fibre metal laminates
@@ -35,41 +66,29 @@ Hot Form Quench across aluminium, steel, titanium, fibre metal laminates
 **Air defence economics** &nbsp;&#8250;&nbsp; self-directed paper
 Cost asymmetry, production scaling, inventory dynamics
 
----
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+</picture>
 
-### Finished
+### Stack
 
-<table>
-<tr><td width="230"><b>Track bike frame</b><br><sub>Aluminium 6061-T6<br>14 months &#183; graded A*</sub></td><td>
+<div align="center">
 
-Designed, simulated, TIG welded and road tested end to end.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/orbit-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/orbit-light.svg">
+  <img alt="Tools in orbit: Python, TypeScript, React, Node, PostgreSQL, Fusion 360, Ansys FEA, SimScale CFD, KiCad, TIG welding, FDM printing, composite layup" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/orbit-dark.svg">
+</picture>
 
-`12%` drag reduction over baseline, across 30+ SimScale CFD iterations
-`FOS 1.08` at yield, bottom-bracket junction reinforced after Ansys FEA found peak stress there
-`6%` measured gain in speed-to-power ratio on road-test intervals
+</div>
 
-</td></tr>
-<tr><td width="230"><b>SatHack</b><br><sub>Imperial &#183; 24 hours</sub></td><td>
-
-`1st` of 60+ teams, orbital satellite build.
-Built the power budget and the on-board-computer stack, team of four.
-
-</td></tr>
-<tr><td width="230"><b>DE1 Grand Prix car</b><br><sub>3D-printed electric racer</sub></td><td>
-
-Sole owner of the CAD across a four-person team.
-Full F1-architecture car in Fusion 360. CFD flow visualisation drove sidepod vent placement. Printed on a Bambu Lab P1S in PLA and PETG. ESP32 and MicroPython drivetrain.
-
-</td></tr>
-<tr><td width="230"><b>IMC Prosperity 4</b><br><sub>Algorithmic trading</sub></td><td>
-
-`Top 150 UK` of 12,000+ entrants.
-Python market-making algorithms. Black-Scholes pricing with dynamic implied-vol calibration. Spread and inventory retuned each round.
-
-</td></tr>
-</table>
-
----
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+</picture>
 
 ### Committees
 
@@ -80,7 +99,11 @@ Python market-making algorithms. Black-Scholes pricing with dynamic implied-vol 
 | Project Svarog, ICSS | Team Lead, STRUM |
 | Climate Entrepreneurs Club | Committee Member |
 
----
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+</picture>
 
 <sub>Most of my work sits in private repos: client work, a personal assistant daemon, and the BlueBand web and CAD repos.</sub>
 
