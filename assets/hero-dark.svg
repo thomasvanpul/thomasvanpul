@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-label="Thomas van Pul, Design Engineering at Imperial College London">
+  <style>
+    .name { font: 600 44px ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; letter-spacing: 6px; fill: #e6edf3; }
+    .sub  { font: 400 15px ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; letter-spacing: 3.2px; fill: #e6edf3; fill-opacity: .62; }
+    .tick { font: 400 11px ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; letter-spacing: 2px; fill: #e6edf3; fill-opacity: .38; }
+  </style>
+
+  <g>
+    <circle cx="396" cy="58" r="1.2" fill="#e6edf3" opacity="0.21"><animate attributeName="opacity" values="0.21;0.05;0.21" dur="5.7s" repeatCount="indefinite"/></circle>
+    <circle cx="444" cy="33" r="1.1" fill="#e6edf3" opacity="0.20"><animate attributeName="opacity" values="0.20;0.05;0.20" dur="5.2s" repeatCount="indefinite"/></circle>
+    <circle cx="101" cy="42" r="1.0" fill="#e6edf3" opacity="0.53"><animate attributeName="opacity" values="0.53;0.13;0.53" dur="3.6s" repeatCount="indefinite"/></circle>
+    <circle cx="480" cy="276" r="0.6" fill="#e6edf3" opacity="0.54"><animate attributeName="opacity" values="0.54;0.14;0.54" dur="4.4s" repeatCount="indefinite"/></circle>
+    <circle cx="187" cy="49" r="0.9" fill="#e6edf3" opacity="0.52"><animate attributeName="opacity" values="0.52;0.13;0.52" dur="3.9s" repeatCount="indefinite"/></circle>
+    <circle cx="93" cy="34" r="0.8" fill="#e6edf3" opacity="0.47"><animate attributeName="opacity" values="0.47;0.12;0.47" dur="5.1s" repeatCount="indefinite"/></circle>
+    <circle cx="629" cy="249" r="1.3" fill="#e6edf3" opacity="0.30"><animate attributeName="opacity" values="0.30;0.08;0.30" dur="7.9s" repeatCount="indefinite"/></circle>
+    <circle cx="898" cy="58" r="1.0" fill="#e6edf3" opacity="0.20"><animate attributeName="opacity" values="0.20;0.05;0.20" dur="6.3s" repeatCount="indefinite"/></circle>
+    <circle cx="994" cy="267" r="1.0" fill="#e6edf3" opacity="0.46"><animate attributeName="opacity" values="0.46;0.11;0.46" dur="3.3s" repeatCount="indefinite"/></circle>
+    <circle cx="1172" cy="235" r="0.9" fill="#e6edf3" opacity="0.34"><animate attributeName="opacity" values="0.34;0.09;0.34" dur="6.3s" repeatCount="indefinite"/></circle>
+    <circle cx="215" cy="49" r="0.7" fill="#e6edf3" opacity="0.50"><animate attributeName="opacity" values="0.50;0.13;0.50" dur="3.6s" repeatCount="indefinite"/></circle>
+    <circle cx="1031" cy="39" r="1.0" fill="#e6edf3" opacity="0.41"><animate attributeName="opacity" values="0.41;0.10;0.41" dur="7.4s" repeatCount="indefinite"/></circle>
+    <circle cx="970" cy="246" r="0.9" fill="#e6edf3" opacity="0.35"><animate attributeName="opacity" values="0.35;0.09;0.35" dur="4.8s" repeatCount="indefinite"/></circle>
+    <circle cx="1046" cy="271" r="0.7" fill="#e6edf3" opacity="0.25"><animate attributeName="opacity" values="0.25;0.06;0.25" dur="4.2s" repeatCount="indefinite"/></circle>
+    <circle cx="703" cy="87" r="0.6" fill="#e6edf3" opacity="0.36"><animate attributeName="opacity" values="0.36;0.09;0.36" dur="4.8s" repeatCount="indefinite"/></circle>
+    <circle cx="677" cy="270" r="1.2" fill="#e6edf3" opacity="0.40"><animate attributeName="opacity" values="0.40;0.10;0.40" dur="6.1s" repeatCount="indefinite"/></circle>
+    <circle cx="804" cy="32" r="1.4" fill="#e6edf3" opacity="0.51"><animate attributeName="opacity" values="0.51;0.13;0.51" dur="7.4s" repeatCount="indefinite"/></circle>
+    <circle cx="483" cy="45" r="1.2" fill="#e6edf3" opacity="0.21"><animate attributeName="opacity" values="0.21;0.05;0.21" dur="3.3s" repeatCount="indefinite"/></circle>
+    <circle cx="262" cy="61" r="0.9" fill="#e6edf3" opacity="0.20"><animate attributeName="opacity" values="0.20;0.05;0.20" dur="3.0s" repeatCount="indefinite"/></circle>
+    <circle cx="195" cy="45" r="0.9" fill="#e6edf3" opacity="0.19"><animate attributeName="opacity" values="0.19;0.05;0.19" dur="7.4s" repeatCount="indefinite"/></circle>
+    <circle cx="732" cy="57" r="0.8" fill="#e6edf3" opacity="0.33"><animate attributeName="opacity" values="0.33;0.08;0.33" dur="4.8s" repeatCount="indefinite"/></circle>
+    <circle cx="162" cy="242" r="1.5" fill="#e6edf3" opacity="0.38"><animate attributeName="opacity" values="0.38;0.09;0.38" dur="5.4s" repeatCount="indefinite"/></circle>
+    <circle cx="120" cy="45" r="0.9" fill="#e6edf3" opacity="0.29"><animate attributeName="opacity" values="0.29;0.07;0.29" dur="7.1s" repeatCount="indefinite"/></circle>
+    <circle cx="207" cy="24" r="1.5" fill="#e6edf3" opacity="0.40"><animate attributeName="opacity" values="0.40;0.10;0.40" dur="3.7s" repeatCount="indefinite"/></circle>
+    <circle cx="650" cy="25" r="1.1" fill="#e6edf3" opacity="0.59"><animate attributeName="opacity" values="0.59;0.15;0.59" dur="7.3s" repeatCount="indefinite"/></circle>
+    <circle cx="828" cy="87" r="0.9" fill="#e6edf3" opacity="0.25"><animate attributeName="opacity" values="0.25;0.06;0.25" dur="6.9s" repeatCount="indefinite"/></circle>
+    <circle cx="402" cy="77" r="1.3" fill="#e6edf3" opacity="0.59"><animate attributeName="opacity" values="0.59;0.15;0.59" dur="7.3s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <g transform="rotate(-7.0 935.0 150.0)">
+    <ellipse cx="935.0" cy="150.0" rx="252" ry="38" fill="none" stroke="#e6edf3" stroke-opacity="0.34" stroke-width="1.0" stroke-dasharray="104.0 52.0 31.2 852.5" stroke-linecap="round"><animate attributeName="stroke-dashoffset" from="0" to="1039.6" dur="26s" repeatCount="indefinite"/></ellipse>
+    <ellipse cx="935.0" cy="150.0" rx="218" ry="33" fill="none" stroke="#e6edf3" stroke-opacity="0.46" stroke-width="1.1" stroke-dasharray="90.0 45.0 27.0 737.6" stroke-linecap="round"><animate attributeName="stroke-dashoffset" from="0" to="899.5" dur="21s" repeatCount="indefinite"/></ellipse>
+    <ellipse cx="935.0" cy="150.0" rx="184" ry="28" fill="none" stroke="#e6edf3" stroke-opacity="0.6" stroke-width="1.2" stroke-dasharray="75.9 38.0 22.8 622.8" stroke-linecap="round"><animate attributeName="stroke-dashoffset" from="0" to="759.5" dur="17s" repeatCount="indefinite"/></ellipse>
+    <ellipse cx="935.0" cy="150.0" rx="150" ry="23" fill="none" stroke="#e6edf3" stroke-opacity="0.74" stroke-width="1.2" stroke-dasharray="61.9 31.0 18.6 507.9" stroke-linecap="round"><animate attributeName="stroke-dashoffset" from="0" to="619.4" dur="13s" repeatCount="indefinite"/></ellipse>
+    <ellipse cx="935.0" cy="150.0" rx="118" ry="18" fill="none" stroke="#e6edf3" stroke-opacity="0.88" stroke-width="1.4" stroke-dasharray="48.7 24.4 14.6 399.4" stroke-linecap="round"><animate attributeName="stroke-dashoffset" from="0" to="487.1" dur="10s" repeatCount="indefinite"/></ellipse>
+    <ellipse cx="935.0" cy="150.0" rx="88" ry="13" fill="none" stroke="#e6edf3" stroke-opacity="1.0" stroke-width="1.5" stroke-dasharray="36.3 18.1 10.9 297.4" stroke-linecap="round"><animate attributeName="stroke-dashoffset" from="0" to="362.7" dur="7s" repeatCount="indefinite"/></ellipse>
+    <path d="M 869.0 150.0 A 66.0 66.0 0 0 1 1001.0 150.0" fill="none" stroke="#e6edf3" stroke-opacity=".5" stroke-width="1.1"/>
+    <circle cx="935.0" cy="150.0" r="44.0" fill="#0d1117"/>
+    <circle cx="935.0" cy="150.0" r="44.0" fill="none" stroke="#e6edf3" stroke-width="1.8" stroke-opacity=".9">
+      <animate attributeName="stroke-opacity" values=".9;.45;.9" dur="5.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="935.0" cy="150.0" r="53.0" fill="none" stroke="#e6edf3" stroke-width="0.7" stroke-opacity=".28">
+      <animate attributeName="r" values="53.0;61.0;53.0" dur="5.5s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values=".28;.05;.28" dur="5.5s" repeatCount="indefinite"/>
+    </circle>
+    <path d="M 683.0 150.0 A 252 38 0 0 0 1187.0 150.0" fill="none" stroke="#e6edf3" stroke-opacity="0.34" stroke-width="1.0"/>
+    <path d="M 717.0 150.0 A 218 33 0 0 0 1153.0 150.0" fill="none" stroke="#e6edf3" stroke-opacity="0.46" stroke-width="1.1"/>
+    <path d="M 751.0 150.0 A 184 28 0 0 0 1119.0 150.0" fill="none" stroke="#e6edf3" stroke-opacity="0.6" stroke-width="1.2"/>
+    <path d="M 785.0 150.0 A 150 23 0 0 0 1085.0 150.0" fill="none" stroke="#e6edf3" stroke-opacity="0.74" stroke-width="1.2"/>
+    <path d="M 817.0 150.0 A 118 18 0 0 0 1053.0 150.0" fill="none" stroke="#e6edf3" stroke-opacity="0.88" stroke-width="1.4"/>
+    <path d="M 847.0 150.0 A 88 13 0 0 0 1023.0 150.0" fill="none" stroke="#e6edf3" stroke-opacity="1.0" stroke-width="1.5"/>
+  </g>
+
+  <line x1="70" y1="196" x2="470" y2="196" stroke="#e6edf3" stroke-opacity=".22" stroke-width="1"/>
+  <text class="name" x="70" y="150">THOMAS VAN PUL</text>
+  <text class="sub"  x="72" y="182">DESIGN ENGINEERING &#183; IMPERIAL COLLEGE LONDON</text>
+  <text class="tick" x="72" y="222">CAD &#183; FEA &#183; CFD &#183; TYPESCRIPT &#183; PYTHON</text>
+</svg>
