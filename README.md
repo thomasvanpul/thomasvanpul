@@ -8,11 +8,7 @@
 
 </div>
 
-Mechanical design on one side, software on the other, usually on the same project.
-
-- CAD, FEA, CFD, TIG welding, 3D printing
-- TypeScript, React, Node, Python, PostgreSQL
-- Second-year MEng, Dyson School of Design Engineering, Imperial College London
+I build hardware and the software that runs it. Most of what is here is either a thing that moves or a thing that tracks something.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
@@ -20,28 +16,17 @@ Mechanical design on one side, software on the other, usually on the same projec
   <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
 </picture>
 
-### Results
+### BlueBand
 
-<div align="center">
+A wearable motion band, in development. One person doing the whole chain, which is the interesting part and also the hard part: the enclosure has to fit the board, the board has to fit the sensor loop, and the app has to make sense of what comes out.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/results-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/results-light.svg">
-  <img alt="12% drag reduction, FOS 1.08, 6% speed-to-power gain, 1st at SatHack, top 150 UK at IMC Prosperity 4" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/results-dark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-blueband-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-blueband-light.svg">
+  <img alt="BlueBand build chain: CAD to PCB to firmware to app" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-blueband-dark.svg">
 </picture>
 
-</div>
-
-<table>
-<tr><td width="215"><b>Track bike frame</b><br><sub>Al 6061-T6 &#183; 14 months &#183; A*</sub></td>
-<td>Designed, simulated, TIG welded and road tested end to end. CFD-driven tube geometry, Ansys FEA on the bottom-bracket junction, measured on road-test intervals.</td></tr>
-<tr><td width="215"><b>SatHack</b><br><sub>Imperial &#183; 24 hours</sub></td>
-<td>Orbital satellite build, team of four. Built the power budget and the on-board-computer stack.</td></tr>
-<tr><td width="215"><b>DE1 Grand Prix car</b><br><sub>3D-printed electric racer</sub></td>
-<td>Sole owner of the CAD across a four-person team. F1 architecture in Fusion 360, CFD flow visualisation placing the sidepod vents, printed on a Bambu Lab P1S, ESP32 and MicroPython drivetrain.</td></tr>
-<tr><td width="215"><b>IMC Prosperity 4</b><br><sub>Algorithmic trading</sub></td>
-<td>Python market-making algorithms, Black-Scholes pricing with dynamic implied-vol calibration, spread and inventory retuned each round.</td></tr>
-</table>
+Repo: [`blueband-concept`](https://github.com/thomasvanpul/blueband-concept) &nbsp;·&nbsp; concept model and the render pipeline. Web and CAD repos are private for now.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
@@ -49,22 +34,35 @@ Mechanical design on one side, software on the other, usually on the same projec
   <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
 </picture>
 
-### Building now
+### Numeris
 
-**BlueBand** &nbsp;&#8250;&nbsp; wearable motion band, in development
-`ESP32-S3` `KiCad` `Fusion 360` `React` &nbsp;·&nbsp; [`blueband-concept`](https://github.com/thomasvanpul/blueband-concept)
+A personal finance app I actually use every day, which is why it exists. Bank data in through Plaid, market data alongside it, normalised into Postgres, out through a typed API.
 
-**Numeris** &nbsp;&#8250;&nbsp; personal finance app, in daily use
-`React` `Node` `PostgreSQL` `Plaid` &nbsp;·&nbsp; [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-numeris-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-numeris-light.svg">
+  <img alt="Numeris data flow: bank via Plaid, ingest, Postgres, API, React UI" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-numeris-dark.svg">
+</picture>
 
-**HFQ forming research** &nbsp;&#8250;&nbsp; remote work with Dr Nan Li, Dyson School, since Aug 2026
-Hot Form Quench across aluminium, steel, titanium, fibre metal laminates
+Daily use is what makes it a real project: rate limits, dirty data, cache invalidation and latency all had to be dealt with rather than designed around.
 
-**Interstellar Sanctuary** &nbsp;&#8250;&nbsp; Malaysia property launch map, with an EdgeProp collaborator
-[interstellarsanctuary.com](https://interstellarsanctuary.com)
+Repo: [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
 
-**Air defence economics** &nbsp;&#8250;&nbsp; self-directed paper
-Cost asymmetry, production scaling, inventory dynamics
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+</picture>
+
+### Also running
+
+**Interstellar Sanctuary** &nbsp;·&nbsp; Malaysia property launch map, built with an EdgeProp collaborator. Government-database crawlers feeding a searchable map. Live at [interstellarsanctuary.com](https://interstellarsanctuary.com)
+
+**HFQ forming research** &nbsp;·&nbsp; remote work with Dr Nan Li at the Dyson School since Aug 2026. Hot Form Quench forming across aluminium, steel, titanium and fibre metal laminates.
+
+**Air defence economics** &nbsp;·&nbsp; a self-directed paper. Every figure in it has to be regenerable from a CSV by running one script, so the analysis code matters as much as the writing.
+
+**IRIS** &nbsp;·&nbsp; an always-on personal assistant daemon on macOS. Private repo.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
@@ -90,23 +88,6 @@ Cost asymmetry, production scaling, inventory dynamics
   <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
 </picture>
 
-### Committees
-
-| | |
-|---|---|
-| Imperial College Finance Society | Associate, 2026/27 |
-| Imperial College Space Society | Head of Events, previously Secretary |
-| Project Svarog, ICSS | Team Lead, STRUM |
-| Climate Entrepreneurs Club | Committee Member |
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
-  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
-</picture>
-
-<sub>Most of my work sits in private repos: client work, a personal assistant daemon, and the BlueBand web and CAD repos.</sub>
-
 <div align="center">
 
 <picture>
@@ -114,6 +95,8 @@ Cost asymmetry, production scaling, inventory dynamics
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/output/github-contribution-grid-snake.svg">
   <img alt="contribution snake" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/output/github-contribution-grid-snake-dark.svg">
 </picture>
+
+<sub>Second-year MEng Design Engineering, Dyson School, Imperial College London &nbsp;·&nbsp; CV and the rest at <a href="https://thomasvp.com">thomasvp.com</a></sub>
 
 [thomasvp.com](https://thomasvp.com) &nbsp;·&nbsp; [linkedin.com/in/vanpulthomas](https://www.linkedin.com/in/vanpulthomas) &nbsp;·&nbsp; `vanpulthomas@gmail.com`
 
