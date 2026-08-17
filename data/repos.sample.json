@@ -1,0 +1,69 @@
+{
+  "owner": "thomasvanpul",
+  "repo": "thomasvanpul",
+  "branch": "main",
+  "featured": [
+    {
+      "name": "blueband-concept",
+      "description": "Concept model and render pipeline for the BlueBand motion band.",
+      "language": "Python",
+      "topics": ["wearable", "hardware", "cad"],
+      "url": "https://github.com/thomasvanpul/blueband-concept",
+      "flow": {
+        "id": "blueband",
+        "duration": 8.8,
+        "stages": [
+          ["CAD", "enclosure, Fusion 360"],
+          ["PCB", "KiCad, custom board"],
+          ["FIRMWARE", "sensor loop"],
+          ["APP", "React front end"]
+        ]
+      }
+    },
+    {
+      "name": "Finance-Tracker",
+      "description": "Personal finance app with Plaid ingest, Postgres ledger, typed API.",
+      "language": "TypeScript",
+      "topics": ["finance", "plaid", "postgres"],
+      "url": "https://github.com/thomasvanpul/Finance-Tracker",
+      "flow": {
+        "id": "numeris",
+        "duration": 11.0,
+        "stages": [
+          ["BANK", "Plaid link"],
+          ["INGEST", "Node service"],
+          ["POSTGRES", "normalised ledger"],
+          ["API", "typed endpoints"],
+          ["UI", "React, daily use"]
+        ],
+        "side_input": {
+          "label": "MARKET DATA",
+          "sublabel": "Yahoo Finance",
+          "connects_to": 1
+        }
+      }
+    }
+  ],
+  "orbit": {
+    "rings": [
+      {
+        "rx": 470,
+        "ry": 116,
+        "duration": 46,
+        "items": ["Python", "TypeScript", "React", "Node", "PostgreSQL"]
+      },
+      {
+        "rx": 330,
+        "ry": 82,
+        "duration": 33,
+        "items": ["Fusion 360", "Ansys FEA", "SimScale CFD", "KiCad"]
+      },
+      {
+        "rx": 200,
+        "ry": 50,
+        "duration": 22,
+        "items": ["TIG welding", "FDM printing", "composite layup"]
+      }
+    ]
+  }
+}
