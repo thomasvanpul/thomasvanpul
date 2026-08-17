@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 330" width="1200" height="330" role="img" aria-label="Tools in orbit">
+  <g>
+    
+<path id="o0" d="M 130.0 165.0 a 470 116 0 1 0 940 0 a 470 116 0 1 0 -940 0" fill="none" stroke="#0d1117" stroke-opacity=".30" stroke-width="1"/>    <path id="o1" d="M 270.0 165.0 a 330 82 0 1 0 660 0 a 330 82 0 1 0 -660 0" fill="none" stroke="#0d1117" stroke-opacity=".45" stroke-width="1"/>    <path id="o2" d="M 400.0 165.0 a 200 50 0 1 0 400 0 a 200 50 0 1 0 -400 0" fill="none" stroke="#0d1117" stroke-opacity=".65" stroke-width="1"/>
+  </g>
+  <circle cx="600.0" cy="165.0" r="30" fill="#ffffff"/>
+  <circle cx="600.0" cy="165.0" r="30" fill="none" stroke="#0d1117" stroke-width="1.6" stroke-opacity=".85">
+    <animate attributeName="stroke-opacity" values=".85;.4;.85" dur="5.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="600.0" cy="165.0" r="38" fill="none" stroke="#0d1117" stroke-width="0.7" stroke-opacity=".25">
+    <animate attributeName="r" values="38;46;38" dur="5.5s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-opacity" values=".25;.04;.25" dur="5.5s" repeatCount="indefinite"/>
+  </circle>
+  <text x="600.0" y="169.0" text-anchor="middle" style="font:600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:2px" fill="#0d1117" fill-opacity=".55">TVP</text>
+
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">Python</text>
+    <animateMotion dur="46s" begin="0.00s" repeatCount="indefinite" rotate="0"><mpath href="#o0"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">TypeScript</text>
+    <animateMotion dur="46s" begin="-9.20s" repeatCount="indefinite" rotate="0"><mpath href="#o0"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">React</text>
+    <animateMotion dur="46s" begin="-18.40s" repeatCount="indefinite" rotate="0"><mpath href="#o0"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">Node</text>
+    <animateMotion dur="46s" begin="-27.60s" repeatCount="indefinite" rotate="0"><mpath href="#o0"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">PostgreSQL</text>
+    <animateMotion dur="46s" begin="-36.80s" repeatCount="indefinite" rotate="0"><mpath href="#o0"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">Fusion 360</text>
+    <animateMotion dur="33s" begin="0.00s" repeatCount="indefinite" rotate="0"><mpath href="#o1"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">Ansys FEA</text>
+    <animateMotion dur="33s" begin="-8.25s" repeatCount="indefinite" rotate="0"><mpath href="#o1"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">SimScale CFD</text>
+    <animateMotion dur="33s" begin="-16.50s" repeatCount="indefinite" rotate="0"><mpath href="#o1"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">KiCad</text>
+    <animateMotion dur="33s" begin="-24.75s" repeatCount="indefinite" rotate="0"><mpath href="#o1"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">TIG welding</text>
+    <animateMotion dur="22s" begin="0.00s" repeatCount="indefinite" rotate="0"><mpath href="#o2"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">FDM printing</text>
+    <animateMotion dur="22s" begin="-7.33s" repeatCount="indefinite" rotate="0"><mpath href="#o2"/></animateMotion>
+  </g>
+  <g>
+    <circle r="3" fill="#0d1117" fill-opacity=".9"/>
+    <circle r="7" fill="none" stroke="#0d1117" stroke-opacity=".25" stroke-width="1"/>
+    <text x="12" y="4" style="font:400 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".8">composite layup</text>
+    <animateMotion dur="22s" begin="-14.67s" repeatCount="indefinite" rotate="0"><mpath href="#o2"/></animateMotion>
+  </g>
+</svg>
