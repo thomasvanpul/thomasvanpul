@@ -1,35 +1,48 @@
 <div align="center">
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=24&duration=2800&pause=1200&color=58A6FF&center=true&vCenter=true&repeat=true&width=760&lines=Thomas+van+Pul;Design+Engineering+%40+Imperial+College+London;Hardware+that+ships%2C+software+that+runs;Dutch+%C2%B7+Penang+%2F+London)](https://thomasvp.com)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/hero-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/hero-light.svg">
+  <img alt="Thomas van Pul, Design Engineering at Imperial College London" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/hero-dark.svg">
+</picture>
 
 </div>
 
-<br/>
+Second-year MEng Design Engineering at the Dyson School, Imperial College London. I work at the join between mechanical design and software: CAD, FEA and CFD on one side, TypeScript and Python on the other, usually on the same project.
 
-Second-year MEng Design Engineering at the Dyson School, Imperial College London. I work at the join between mechanical design and software: CAD and FEA on one side, TypeScript and Python on the other, usually on the same project.
+### Building now
 
-### Now
+| | |
+|---|---|
+| **BlueBand** | Wearable motion band in development. ESP32-S3, KiCad PCB, enclosure CAD, web app. [`blueband-concept`](https://github.com/thomasvanpul/blueband-concept) |
+| **HFQ forming research** | Working remotely with Dr Nan Li at the Dyson School, Imperial. Hot Form Quench forming across aluminium, steel, titanium and fibre metal laminates. Ongoing since Aug 2026 |
+| **Numeris** | Personal finance app in daily use. React, Node, PostgreSQL, Plaid bank sync, Yahoo Finance market data. [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker) |
+| **Air defence economics** | Self-directed paper on cost asymmetry, production scaling and inventory dynamics in countering low-cost aerial threats |
+| **Interstellar Sanctuary** | Malaysia property launch map, built with an EdgeProp collaborator. [interstellarsanctuary.com](https://interstellarsanctuary.com) |
 
-- **Blueband** · designing and building a wearable product end to end, from enclosure CAD and PCB through to the web app
-- **Research placement, Imperial** · literature review and materials database on fibre reinforced thermoplastics and fibre metal laminates, with Dr Nan Li's group
-- **Air defence economics** · a self-directed paper on the cost, manufacturing and inventory dynamics of countering low-cost aerial threats
+### Things I have actually finished
 
-### Selected work
+**Track bike frame, aluminium 6061-T6** &nbsp;·&nbsp; 14-month independent project, graded A\*. Designed, simulated, TIG welded and road tested end to end. 12% drag reduction over baseline geometry across 30+ SimScale CFD iterations. Bottom-bracket junction reinforced to FOS 1.08 at yield after Ansys FEA located peak stress there. 6% measured improvement in speed-to-power ratio on road-test intervals.
 
-| Project | What it is | Built with |
-|---|---|---|
-| [Blueband](https://github.com/thomasvanpul/blueband-concept) | Wearable product concept: Blender build and canonical render pipeline | Python · Blender · Three.js |
-| [Numeris](https://github.com/thomasvanpul/Finance-Tracker) | Personal finance app with bank sync, CSV import and live market data | TypeScript · React · PostgreSQL |
-| [Malaysia Launches Explorer](https://interstellarsanctuary.com) | Property launch map and search tool, built for a client and running in production | Next.js · Python · Mapbox |
-| Triathlon frame | Aluminium 6061 frame designed, wind-tunnel tested and TIG welded from scratch | Fusion 360 · Ansys |
+**SatHack, Imperial** &nbsp;·&nbsp; 1st place, 60+ teams, 24-hour orbital satellite build. Built the power budget and the on-board-computer stack in a team of four.
 
-Some repositories here are private: client work, an always-on personal assistant daemon, and the Blueband web and CAD repos.
+**DE1 Grand Prix car** &nbsp;·&nbsp; Sole owner of the CAD across a four-person team. Full F1-architecture car modelled in Fusion 360, CFD flow visualisation driving sidepod vent placement, printed on a Bambu Lab P1S in PLA and PETG, ESP32 and MicroPython drivetrain control.
 
-### Tools
+**IMC Prosperity 4** &nbsp;·&nbsp; Top 150 UK of 12,000+ entrants. Python market-making algorithms, Black-Scholes pricing with dynamic implied-vol calibration, spread and inventory tuned each round.
 
-- **Software** · Python · TypeScript · React · Next.js · Node · PostgreSQL · Git
-- **Mechanical** · Fusion 360 · SolidWorks · Ansys FEA · Blender · KiCad
-- **Making** · TIG welding · composite layup · 3D printing · wind tunnel testing
+### Committees
+
+Associate, Imperial College Finance Society (2026/27) &nbsp;·&nbsp; Head of Events and Secretary, Imperial College Space Society &nbsp;·&nbsp; Team Lead, STRUM (Project Svarog, ICSS) &nbsp;·&nbsp; Committee Member, Climate Entrepreneurs Club
+
+### Stack
+
+```
+software    Python  TypeScript  React  Next.js  Node  PostgreSQL  SQL  MATLAB
+mechanical  Fusion 360  SolidWorks  Ansys FEA  SimScale CFD  KiCad  Blender
+making      TIG welding  composite layup  FDM printing
+```
+
+Most of my work sits in private repos: client work, a personal assistant daemon, and the BlueBand web and CAD repos.
 
 ### Contributions
 
@@ -45,6 +58,6 @@ Some repositories here are private: client work, an always-on personal assistant
 
 <div align="center">
 
-[thomasvp.com](https://thomasvp.com) &nbsp;·&nbsp; `vanpulthomas@gmail.com`
+[thomasvp.com](https://thomasvp.com) &nbsp;·&nbsp; [linkedin.com/in/vanpulthomas](https://www.linkedin.com/in/vanpulthomas) &nbsp;·&nbsp; `vanpulthomas@gmail.com`
 
 </div>
