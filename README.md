@@ -11,9 +11,9 @@
 I build hardware and the software that runs it. Most of what is here is either a thing that moves or a thing that tracks something.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
-  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-dark.svg">
 </picture>
 
 ### BlueBand
@@ -29,9 +29,9 @@ A wearable motion band, in development. One person doing the whole chain, which 
 Repo: [`blueband-concept`](https://github.com/thomasvanpul/blueband-concept) &nbsp;·&nbsp; concept model and the render pipeline. Web and CAD repos are private for now.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
-  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-dark.svg">
 </picture>
 
 ### Numeris
@@ -49,9 +49,9 @@ Daily use is what makes it a real project: rate limits, dirty data, cache invali
 Repo: [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
-  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-dark.svg">
 </picture>
 
 ### Also running
@@ -65,9 +65,9 @@ Repo: [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
 **IRIS** &nbsp;·&nbsp; an always-on personal assistant daemon on macOS. Private repo.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
-  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-dark.svg">
 </picture>
 
 ### Stack
@@ -83,9 +83,9 @@ Repo: [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-light.svg">
-  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-dark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule-v2-dark.svg">
 </picture>
 
 <div align="center">
