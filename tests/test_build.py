@@ -125,6 +125,68 @@ def test_contributions_fetch_failure_leaves_disk_untouched(tmp_path):
     _assert_unchanged(snapshot)
 
 
+def test_ci_without_stats_token_fails_loudly(tmp_path, monkeypatch):
+    """In CI, missing PROFILE_STATS_TOKEN must fail rather than skip the panel.
+
+    Otherwise the README would flip-flop between having the panel and not
+    having it every time the secret was added/removed.
+    """
+    out_dir, snapshot = _seed_out(tmp_path)
+    orbit = _write_orbit(tmp_path)
+    fixture = tmp_path / "unused.json"
+
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+
+    api_repo = {
+        "name": "some-repo",
+        "html_url": "https://github.com/thomasvanpul/some-repo",
+        "default_branch": "main",
+        "description": "desc",
+        "language": "Python",
+        "topics": ["profile-feature"],
+        "pushed_at": "2026-08-01T00:00:00Z",
+        "archived": False,
+        "fork": False,
+    }
+    with patch.object(gh, "fetch_featured_repos", return_value=[api_repo]), \
+         patch.object(gh, "fetch_profile_config", return_value=None):
+        with pytest.raises(build.BuildError, match="PROFILE_STATS_TOKEN not set in CI"):
+            build.build(fixture_path=fixture, orbit_path=orbit, out_dir=out_dir,
+                        token="fake-token", stats_token=None)
+
+    _assert_unchanged(snapshot)
+
+
+def test_local_without_stats_token_skips_panel(tmp_path, monkeypatch):
+    """Same conditions locally: build succeeds, panel is skipped."""
+    out_dir = tmp_path
+    (out_dir / "assets").mkdir()
+    orbit = _write_orbit(tmp_path)
+    fixture = tmp_path / "unused.json"
+
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+
+    api_repo = {
+        "name": "some-repo",
+        "html_url": "https://github.com/thomasvanpul/some-repo",
+        "default_branch": "main",
+        "description": "desc",
+        "language": "Python",
+        "topics": ["profile-feature"],
+        "pushed_at": "2026-08-01T00:00:00Z",
+        "archived": False,
+        "fork": False,
+    }
+    with patch.object(gh, "fetch_featured_repos", return_value=[api_repo]), \
+         patch.object(gh, "fetch_profile_config", return_value=None):
+        build.build(fixture_path=fixture, orbit_path=orbit, out_dir=out_dir,
+                    token="fake-token", stats_token=None)
+
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+    assert "assets/stats." not in readme
+    assert "output/github-contribution-grid-snake" in readme
+
+
 def test_streak_computation_with_gap():
     """Longest streak spans the pre-gap run; current streak reflects post-gap."""
     def days(spec: str) -> list[dict]:

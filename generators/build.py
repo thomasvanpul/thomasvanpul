@@ -81,7 +81,19 @@ def _load_data(token: str | None, stats_token: str | None,
         except gh.GitHubError as e:
             raise BuildError(f"failed to fetch contributions: {e}") from e
     else:
-        print("no PROFILE_STATS_TOKEN, skipping contributions panel", file=sys.stderr)
+        # In CI the panel is required — the whole point of the split token
+        # is to make CI output deterministic. Allowing a token-absent commit
+        # would flip-flop the panel in and out of the README as the secret
+        # gets added/removed. Local runs skip the panel so `make preview`
+        # still works offline.
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            raise BuildError(
+                "PROFILE_STATS_TOKEN not set in CI — refusing to publish a "
+                "README without the contributions panel (would flip-flop). "
+                "Add the secret or unset GITHUB_ACTIONS to skip locally."
+            )
+        print("no PROFILE_STATS_TOKEN, skipping contributions panel (local run)",
+              file=sys.stderr)
         data["contributions"] = None
 
     return data
