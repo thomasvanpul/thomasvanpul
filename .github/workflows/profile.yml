@@ -40,11 +40,13 @@ jobs:
 
       - name: Build profile
         env:
-          # PROFILE_TOKEN (a fine-grained PAT with `repo:read` on the account)
-          # is required to hit /user/repos and read .profile.yml on private
-          # repos. Falls back to GITHUB_TOKEN which will still work for public
-          # repos via /users/thomasvanpul/repos-visible content.
-          GITHUB_TOKEN: ${{ secrets.PROFILE_TOKEN || secrets.GITHUB_TOKEN }}
+          # Deliberately GITHUB_TOKEN only — no PAT fallback. This build is
+          # public-repos-only by design: what shows up on my profile should
+          # be exactly what any anonymous visitor can already see. Introducing
+          # a PAT here would silently widen what the build can read (private
+          # repos, other users' .profile.yml) without a corresponding change
+          # to the visible output, which is a footgun.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python -m generators.build
 
       - name: Commit if changed

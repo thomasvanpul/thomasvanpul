@@ -78,7 +78,8 @@ def fetch_featured_repos(token: str) -> list[dict]:
     """Return the authenticated user's opt-in featured repos.
 
     Featured = topic 'profile-feature', not archived, not a fork.
-    Sorted by pushed_at descending for deterministic ordering.
+    Pre-sorted by pushed_at descending; final ordering is applied in build.py
+    after each repo's .profile.yml weight is known.
     """
     url = f"{API_BASE}/user/repos?per_page=100&type=owner&sort=pushed"
     all_repos = list(_paginate(url, token))

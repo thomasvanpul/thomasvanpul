@@ -78,6 +78,23 @@ def test_api_failure_raises_and_leaves_disk_untouched(tmp_path):
     _assert_unchanged(snapshot)
 
 
+def test_weight_sort_beats_pushed_at(tmp_path):
+    """Lower weight wins; unweighted repos sort last, tie-broken by pushed_at."""
+    entries = [
+        {"name": "recent-unweighted", "pushed_at": "2026-09-01T00:00:00Z",
+         "profile_config": {}},
+        {"name": "heavy", "pushed_at": "2026-08-01T00:00:00Z",
+         "profile_config": {"weight": 20}},
+        {"name": "light", "pushed_at": "2026-01-01T00:00:00Z",
+         "profile_config": {"weight": 10}},
+        {"name": "older-unweighted", "pushed_at": "2026-05-01T00:00:00Z",
+         "profile_config": None},
+    ]
+    from generators.build import _sort_featured
+    ordered = [e["name"] for e in _sort_featured(entries)]
+    assert ordered == ["light", "heavy", "recent-unweighted", "older-unweighted"]
+
+
 def test_missing_profile_yml_falls_back_to_plain_card(tmp_path):
     out_dir = tmp_path
     (out_dir / "assets").mkdir()

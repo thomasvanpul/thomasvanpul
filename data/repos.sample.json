@@ -13,6 +13,7 @@
       "pushed_at": "2026-08-18T04:03:24Z",
       "profile_config": {
         "diagram": "flow",
+        "weight": 20,
         "stages": [
           ["BANK", "Plaid link"],
           ["INGEST", "Node service"],
@@ -33,6 +34,7 @@
       "pushed_at": "2026-08-17T17:03:35Z",
       "profile_config": {
         "diagram": "flow",
+        "weight": 10,
         "stages": [
           ["CAD", "enclosure, Fusion 360"],
           ["PCB", "KiCad, custom board"],

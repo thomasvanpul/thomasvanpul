@@ -16,6 +16,24 @@ I build hardware and the software that runs it. Most of what is here is either a
   <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule.e700455-dark.svg">
 </picture>
 
+### BlueBand
+
+A wearable motion band, in development. One person doing the whole chain, which is the interesting part and also the hard part: the enclosure has to fit the board, the board has to fit the sensor loop, and the app has to make sense of what comes out.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-blueband-concept.1ba4f76-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-blueband-concept.98f7ec1-light.svg">
+  <img alt="BlueBand build chain: CAD to PCB to firmware to app" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-blueband-concept.1ba4f76-dark.svg">
+</picture>
+
+Repo: [`blueband-concept`](https://github.com/thomasvanpul/blueband-concept) &nbsp;·&nbsp; concept model and the render pipeline. Web and CAD repos are private for now.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule.e700455-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule.c5b44f5-light.svg">
+  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule.e700455-dark.svg">
+</picture>
+
 ### Numeris
 
 A personal finance app I actually use every day, which is why it exists. Bank data in through Plaid, market data alongside it, normalised into Postgres, out through a typed API.
@@ -29,24 +47,6 @@ A personal finance app I actually use every day, which is why it exists. Bank da
 Daily use is what makes it a real project: rate limits, dirty data, cache invalidation and latency all had to be dealt with rather than designed around.
 
 Repo: [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule.e700455-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule.c5b44f5-light.svg">
-  <img alt="" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule.e700455-dark.svg">
-</picture>
-
-### BlueBand
-
-A wearable motion band, in development. One person doing the whole chain, which is the interesting part and also the hard part: the enclosure has to fit the board, the board has to fit the sensor loop, and the app has to make sense of what comes out.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-blueband-concept.1ba4f76-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-blueband-concept.98f7ec1-light.svg">
-  <img alt="BlueBand build chain: CAD to PCB to firmware to app" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/flow-blueband-concept.1ba4f76-dark.svg">
-</picture>
-
-Repo: [`blueband-concept`](https://github.com/thomasvanpul/blueband-concept) &nbsp;·&nbsp; concept model and the render pipeline. Web and CAD repos are private for now.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/rule.e700455-dark.svg">

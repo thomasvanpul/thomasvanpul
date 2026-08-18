@@ -71,7 +71,30 @@ def _load_data(token: str | None, fixture_path: Path, orbit_path: Path) -> dict:
         print("no GITHUB_TOKEN, loading fixture", file=sys.stderr)
         data = json.loads(fixture_path.read_text(encoding="utf-8"))
         data["orbit"] = orbit_cfg
+
+    data["featured"] = _sort_featured(data["featured"])
     return data
+
+
+def _sort_featured(featured: list[dict]) -> list[dict]:
+    """Sort by weight ascending, then pushed_at descending as a tie-break.
+
+    Weight comes from each repo's .profile.yml. Repos with no weight sort
+    after all weighted repos and are tie-broken by pushed_at desc, which
+    matches the fetch order.
+    """
+    # Two passes leaning on the stable sort: establish pushed_at desc first,
+    # then a stable weight-bucket sort preserves it within each bucket.
+    by_pushed = sorted(featured, key=lambda e: e.get("pushed_at") or "", reverse=True)
+
+    def bucket(entry: dict) -> tuple[int, int]:
+        cfg = entry.get("profile_config") or {}
+        weight = cfg.get("weight")
+        if isinstance(weight, int):
+            return (0, weight)
+        return (1, 0)
+
+    return sorted(by_pushed, key=bucket)
 
 
 def _repo_from_api(api_repo: dict, token: str) -> dict:
