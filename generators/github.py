@@ -15,6 +15,7 @@ from typing import Iterator
 import yaml
 
 API_BASE = "https://api.github.com"
+GRAPHQL_URL = "https://api.github.com/graphql"
 FEATURE_TOPIC = "profile-feature"
 UA = "thomasvanpul-profile-builder"
 
@@ -117,3 +118,105 @@ def fetch_profile_config(token: str, owner: str, repo: str, branch: str) -> dict
         print(f"warning: .profile.yml in {owner}/{repo} is not a mapping", file=sys.stderr)
         return None
     return cfg
+
+
+# ---- Contributions (GraphQL) ---------------------------------------------
+
+_CONTRIB_QUERY = """
+query {
+  viewer {
+    contributionsCollection {
+      restrictedContributionsCount
+      totalRepositoriesWithContributedCommits
+      contributionCalendar {
+        totalContributions
+        weeks {
+          contributionDays {
+            date
+            contributionCount
+          }
+        }
+      }
+    }
+  }
+}
+""".strip()
+
+
+def _graphql(token: str, query: str) -> dict:
+    body = json.dumps({"query": query}).encode()
+    req = urllib.request.Request(GRAPHQL_URL, data=body, method="POST", headers={
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": UA,
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            payload = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        raise GitHubError(f"GraphQL HTTP {e.code}: {e.read()[:200].decode(errors='replace')}")
+    except urllib.error.URLError as e:
+        raise GitHubError(f"GraphQL network error: {e.reason}")
+    if payload.get("errors"):
+        raise GitHubError(f"GraphQL errors: {payload['errors']}")
+    return payload["data"]
+
+
+def _flatten_days(calendar: dict) -> list[dict]:
+    """Return chronological [{date, count}, ...] from a contributionCalendar."""
+    days: list[dict] = []
+    for week in calendar.get("weeks") or []:
+        for day in week.get("contributionDays") or []:
+            days.append({"date": day["date"], "count": day["contributionCount"]})
+    return days
+
+
+def current_streak(days: list[dict]) -> int:
+    """Consecutive-non-zero days ending at the most recent day.
+
+    A blank most-recent day gets one grace (the day may not be over yet); any
+    zero after we've started counting terminates the streak.
+    """
+    streak = 0
+    grace = 1
+    for day in reversed(days):
+        if day["count"] > 0:
+            streak += 1
+            grace = 0
+        elif grace > 0:
+            grace -= 1
+        else:
+            break
+    return streak
+
+
+def longest_streak(days: list[dict]) -> int:
+    best = 0
+    run = 0
+    for day in days:
+        if day["count"] > 0:
+            run += 1
+            if run > best:
+                best = run
+        else:
+            run = 0
+    return best
+
+
+def fetch_contributions(token: str) -> dict:
+    """Return contribution stats for the authenticated user, last 12 months.
+
+    Keys: total, restricted, current_streak, longest_streak, repos_committed_to.
+    Raises GitHubError on any HTTP, network, or GraphQL failure.
+    """
+    data = _graphql(token, _CONTRIB_QUERY)
+    cc = data["viewer"]["contributionsCollection"]
+    days = _flatten_days(cc["contributionCalendar"])
+    return {
+        "total": cc["contributionCalendar"]["totalContributions"],
+        "restricted": cc["restrictedContributionsCount"],
+        "current_streak": current_streak(days),
+        "longest_streak": longest_streak(days),
+        "repos_committed_to": cc["totalRepositoriesWithContributedCommits"],
+    }

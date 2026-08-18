@@ -96,3 +96,5 @@ FOOTER_LINKS = (
 SNAKE_DARK_URL = "https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/output/github-contribution-grid-snake-dark.svg"
 SNAKE_LIGHT_URL = "https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/output/github-contribution-grid-snake.svg"
 SNAKE_ARIA = "contribution snake"
+
+STATS_ARIA = "Contributions in the last 12 months"

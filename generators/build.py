@@ -24,7 +24,7 @@ from pathlib import Path
 
 from . import content
 from . import github as gh
-from .svg import THEMES, flow, hero, orbit, rule
+from .svg import THEMES, flow, hero, orbit, rule, stats
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_REPOS_FIXTURE = REPO_ROOT / "data" / "repos.sample.json"
@@ -50,7 +50,8 @@ def _flow_id(repo_name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", repo_name.lower()).strip("-")
 
 
-def _load_data(token: str | None, fixture_path: Path, orbit_path: Path) -> dict:
+def _load_data(token: str | None, stats_token: str | None,
+               fixture_path: Path, orbit_path: Path) -> dict:
     """Load the unified data dict. Raises BuildError on any failure."""
     orbit_cfg = json.loads(orbit_path.read_text(encoding="utf-8"))
 
@@ -73,6 +74,16 @@ def _load_data(token: str | None, fixture_path: Path, orbit_path: Path) -> dict:
         data["orbit"] = orbit_cfg
 
     data["featured"] = _sort_featured(data["featured"])
+
+    if stats_token:
+        try:
+            data["contributions"] = gh.fetch_contributions(stats_token)
+        except gh.GitHubError as e:
+            raise BuildError(f"failed to fetch contributions: {e}") from e
+    else:
+        print("no PROFILE_STATS_TOKEN, skipping contributions panel", file=sys.stderr)
+        data["contributions"] = None
+
     return data
 
 
@@ -149,6 +160,9 @@ def _render_svgs_in_memory(data: dict) -> dict[str, dict[str, str]]:
     variants["orbit"] = {
         theme: orbit.render(theme, data["orbit"]["rings"]) for theme in THEMES
     }
+    contrib = data.get("contributions")
+    if contrib is not None:
+        variants["stats"] = {theme: stats.render(theme, contrib) for theme in THEMES}
 
     for entry in data["featured"]:
         cfg = entry.get("profile_config") or {}
@@ -274,6 +288,10 @@ def _render_readme(data: dict, filenames: dict[str, dict[str, str]]) -> str:
     lines.append(rule_block + "\n")
 
     lines.append('<div align="center">\n')
+    if "stats" in filenames:
+        stats_dark, stats_light = url_pair("stats")
+        lines.append(_picture(stats_dark, stats_light, content.STATS_ARIA))
+        lines.append("\n")
     lines.append(_picture(content.SNAKE_DARK_URL, content.SNAKE_LIGHT_URL, content.SNAKE_ARIA))
     lines.append("\n")
     lines.append(f"<sub>{content.FOOTER_SUB}</sub>\n")
@@ -305,11 +323,14 @@ def _write_all(out_dir: Path, variants: dict[str, dict[str, str]],
 def build(fixture_path: Path = DEFAULT_REPOS_FIXTURE,
           orbit_path: Path = DEFAULT_ORBIT_CONFIG,
           out_dir: Path = DEFAULT_OUT,
-          token: str | None = None) -> list[Path]:
+          token: str | None = None,
+          stats_token: str | None = None) -> list[Path]:
     if token is None:
         token = os.environ.get("GITHUB_TOKEN") or None
+    if stats_token is None:
+        stats_token = os.environ.get("PROFILE_STATS_TOKEN") or None
 
-    data = _load_data(token, fixture_path, orbit_path)
+    data = _load_data(token, stats_token, fixture_path, orbit_path)
     _validate(data)
     variants = _render_svgs_in_memory(data)
     filenames = _hash_variants(variants)

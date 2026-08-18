@@ -40,13 +40,22 @@ jobs:
 
       - name: Build profile
         env:
-          # Deliberately GITHUB_TOKEN only — no PAT fallback. This build is
-          # public-repos-only by design: what shows up on my profile should
-          # be exactly what any anonymous visitor can already see. Introducing
-          # a PAT here would silently widen what the build can read (private
-          # repos, other users' .profile.yml) without a corresponding change
-          # to the visible output, which is a footgun.
+          # Repo discovery: deliberately GITHUB_TOKEN only — no PAT fallback.
+          # This build is public-repos-only by design: what shows up on my
+          # profile should be exactly what any anonymous visitor can already
+          # see. Introducing a PAT here would silently widen what the build
+          # can read (private repos, other users' .profile.yml) without a
+          # corresponding change to the visible output, which is a footgun.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Contributions panel: a classic PAT with `read:user` scope ONLY,
+          # used solely for the contributionsCollection GraphQL call. It must
+          # NOT have `repo` scope — the point of splitting it out is so this
+          # token cannot read private repo contents. Private contributions
+          # come back as anonymised counts under read:user, which is exactly
+          # what we want (totals, no private repo names). If the secret is
+          # absent the build skips the panel rather than failing, so a fork
+          # can run this workflow without needing to configure it.
+          PROFILE_STATS_TOKEN: ${{ secrets.PROFILE_STATS_TOKEN }}
         run: python -m generators.build
 
       - name: Commit if changed
