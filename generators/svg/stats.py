@@ -63,17 +63,23 @@ def _fmt(n: int) -> str:
 def render(theme: str, stats: dict) -> str:
     fg, _ = palette(theme)
 
-    total = _fmt(stats["total"])
     restricted = stats.get("restricted") or 0
-    sub_restricted = f"{_fmt(restricted)} private" if restricted else None
-    current = _fmt(stats["current_streak"])
-    longest = _fmt(stats["longest_streak"])
-    repos = _fmt(stats["repos_committed_to"])
 
-    # Four evenly-spaced columns between MARGIN_X and VIEW_W - MARGIN_X.
+    # Column spec: (number, caption, sub, cursor). "repos_committed_to" is
+    # deliberately omitted — under the CI token's read:user scope it counts
+    # only public repos, which would understate the true figure.
+    columns: list[tuple[str, str, str | None, bool]] = [
+        (_fmt(stats["total"]), "CONTRIBUTIONS", None, False),
+    ]
+    if restricted:
+        columns.append((_fmt(restricted), "PRIVATE", "CONTRIBUTIONS", False))
+    columns.append((_fmt(stats["current_streak"]), "CURRENT STREAK", "DAYS", True))
+    columns.append((_fmt(stats["longest_streak"]), "LONGEST STREAK", "DAYS", False))
+
+    n = len(columns)
     inner = VIEW_W - 2 * MARGIN_X
-    step = inner / 4
-    centres = [MARGIN_X + step * (i + 0.5) for i in range(4)]
+    step = inner / n
+    centres = [MARGIN_X + step * (i + 0.5) for i in range(n)]
 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {VIEW_W} {VIEW_H}" '
@@ -86,13 +92,7 @@ def render(theme: str, stats: dict) -> str:
     for cx in centres:
         parts.append("  " + _tick(cx, fg) + "\n")
 
-    columns = [
-        (centres[0], total, "CONTRIBUTIONS", sub_restricted, False),
-        (centres[1], current, "CURRENT STREAK", "DAYS", True),
-        (centres[2], longest, "LONGEST STREAK", "DAYS", False),
-        (centres[3], repos, "REPOS COMMITTED TO", None, False),
-    ]
-    for cx, number, caption, sub, cursor in columns:
+    for cx, (number, caption, sub, cursor) in zip(centres, columns):
         parts.append("  " + _column(cx, number, caption, sub, fg, cursor) + "\n")
 
     parts.append("</svg>\n")

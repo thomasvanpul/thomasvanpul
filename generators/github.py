@@ -127,7 +127,6 @@ query {
   viewer {
     contributionsCollection {
       restrictedContributionsCount
-      totalRepositoriesWithContributedCommits
       contributionCalendar {
         totalContributions
         weeks {
@@ -207,7 +206,13 @@ def longest_streak(days: list[dict]) -> int:
 def fetch_contributions(token: str) -> dict:
     """Return contribution stats for the authenticated user, last 12 months.
 
-    Keys: total, restricted, current_streak, longest_streak, repos_committed_to.
+    Keys: total, restricted, current_streak, longest_streak.
+
+    Per-repo counts are deliberately not returned. A read:user token counts
+    only what it can see, so any per-repo figure would understate private
+    work — calendar totals and streaks are safe because they come from the
+    server's per-day totals rather than from repo enumeration.
+
     Raises GitHubError on any HTTP, network, or GraphQL failure.
     """
     data = _graphql(token, _CONTRIB_QUERY)
@@ -218,5 +223,4 @@ def fetch_contributions(token: str) -> dict:
         "restricted": cc["restrictedContributionsCount"],
         "current_streak": current_streak(days),
         "longest_streak": longest_streak(days),
-        "repos_committed_to": cc["totalRepositoriesWithContributedCommits"],
     }
