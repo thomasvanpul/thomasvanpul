@@ -1,4 +1,5 @@
 from . import palette
+from ..content import HERO_ARIA
 
 VIEW_W = 1200
 VIEW_H = 300
@@ -124,9 +125,8 @@ def _subtitle_animation(i: int, n: int) -> tuple[str, str, str]:
     return values, key_times, "0"
 
 
-def render(theme: str, name: str, subtitle_lines: list[str]) -> str:
+def render(theme: str, name: str, subtitle_lines: list[str], aria: str = HERO_ARIA) -> str:
     fg, bg = palette(theme)
-    aria = f"{name.title()}, {subtitle_lines[0].title() if subtitle_lines else ''}"
 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {VIEW_W} {VIEW_H}" '

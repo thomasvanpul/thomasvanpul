@@ -36,7 +36,7 @@ def render(theme: str, rings: list[dict], centre_label: str = "TVP") -> str:
             f'<path id="o{idx}" d="{_ring_path(idx, rx, ry)}" fill="none" '
             f'stroke="{fg}" stroke-opacity="{opacity}" stroke-width="1"/>'
         )
-    parts.append("    " + "    ".join(ring_parts) + "\n")
+    parts.append("    ".join(ring_parts) + "\n")
     parts.append('  </g>\n')
 
     parts.append(

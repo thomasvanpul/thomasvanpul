@@ -1,9 +1,9 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/hero.81902d3-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/hero.085c1c8-light.svg">
-  <img alt="Thomas van Pul, Design Engineering at Imperial College London" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/hero.81902d3-dark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/hero.f07ebe0-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/hero.dcc320c-light.svg">
+  <img alt="Thomas van Pul, Design Engineering at Imperial College London" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/hero.f07ebe0-dark.svg">
 </picture>
 
 </div>
@@ -75,9 +75,9 @@ Repo: [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/orbit.1664e1a-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/orbit.47a29dd-light.svg">
-  <img alt="Tools in orbit: Python, TypeScript, React, Node, PostgreSQL, Fusion 360, Ansys FEA, SimScale CFD, KiCad, TIG welding, FDM printing, composite layup" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/orbit.1664e1a-dark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/orbit.56a5c23-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/orbit.1711996-light.svg">
+  <img alt="Tools in orbit: Python, TypeScript, React, Node, PostgreSQL, Fusion 360, Ansys FEA, SimScale CFD, KiCad, TIG welding, FDM printing, composite layup" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/orbit.56a5c23-dark.svg">
 </picture>
 
 </div>

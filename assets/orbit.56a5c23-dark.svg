@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 330" width="1200" height="330" role="img" aria-label="Tools in orbit">
   <g>
     
-    <path id="o0" d="M 130.0 165.0 a 470 116 0 1 0 940 0 a 470 116 0 1 0 -940 0" fill="none" stroke="#e6edf3" stroke-opacity=".30" stroke-width="1"/>    <path id="o1" d="M 270.0 165.0 a 330 82 0 1 0 660 0 a 330 82 0 1 0 -660 0" fill="none" stroke="#e6edf3" stroke-opacity=".45" stroke-width="1"/>    <path id="o2" d="M 400.0 165.0 a 200 50 0 1 0 400 0 a 200 50 0 1 0 -400 0" fill="none" stroke="#e6edf3" stroke-opacity=".65" stroke-width="1"/>
+<path id="o0" d="M 130.0 165.0 a 470 116 0 1 0 940 0 a 470 116 0 1 0 -940 0" fill="none" stroke="#e6edf3" stroke-opacity=".30" stroke-width="1"/>    <path id="o1" d="M 270.0 165.0 a 330 82 0 1 0 660 0 a 330 82 0 1 0 -660 0" fill="none" stroke="#e6edf3" stroke-opacity=".45" stroke-width="1"/>    <path id="o2" d="M 400.0 165.0 a 200 50 0 1 0 400 0 a 200 50 0 1 0 -400 0" fill="none" stroke="#e6edf3" stroke-opacity=".65" stroke-width="1"/>
   </g>
   <circle cx="600.0" cy="165.0" r="30" fill="#0d1117"/>
   <circle cx="600.0" cy="165.0" r="30" fill="none" stroke="#e6edf3" stroke-width="1.6" stroke-opacity=".85">
