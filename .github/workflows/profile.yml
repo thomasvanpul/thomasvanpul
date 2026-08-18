@@ -1,0 +1,62 @@
+name: Build profile
+
+# Rebuilds README.md and assets/ from live GitHub data. Does NOT touch the
+# `output` branch — that belongs to snake.yml.
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "generators/**"
+      - "data/**"
+      - ".github/workflows/profile.yml"
+
+# One build at a time. Never cancel an in-flight run — we don't want a commit
+# racing another commit against the same README.
+concurrency:
+  group: profile-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: pip install --upgrade pip PyYAML
+
+      - name: Build profile
+        env:
+          # PROFILE_TOKEN (a fine-grained PAT with `repo:read` on the account)
+          # is required to hit /user/repos and read .profile.yml on private
+          # repos. Falls back to GITHUB_TOKEN which will still work for public
+          # repos via /users/thomasvanpul/repos-visible content.
+          GITHUB_TOKEN: ${{ secrets.PROFILE_TOKEN || secrets.GITHUB_TOKEN }}
+        run: python -m generators.build
+
+      - name: Commit if changed
+        run: |
+          set -euo pipefail
+          git config user.name "profile-bot"
+          git config user.email "profile-bot@users.noreply.github.com"
+          if [ -z "$(git status --porcelain README.md assets/)" ]; then
+            echo "no changes to commit"
+            exit 0
+          fi
+          git add README.md assets/
+          git commit -m "chore(profile): rebuild from live GitHub data"
+          # Never push anywhere except main. Snake owns `output`.
+          git push origin main

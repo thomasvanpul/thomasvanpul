@@ -1,0 +1,22 @@
+{
+  "rings": [
+    {
+      "rx": 470,
+      "ry": 116,
+      "duration": 46,
+      "items": ["Python", "TypeScript", "React", "Node", "PostgreSQL"]
+    },
+    {
+      "rx": 330,
+      "ry": 82,
+      "duration": 33,
+      "items": ["Fusion 360", "Ansys FEA", "SimScale CFD", "KiCad"]
+    },
+    {
+      "rx": 200,
+      "ry": 50,
+      "duration": 22,
+      "items": ["TIG welding", "FDM printing", "composite layup"]
+    }
+  ]
+}

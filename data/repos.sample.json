@@ -4,31 +4,15 @@
   "branch": "main",
   "featured": [
     {
-      "name": "blueband-concept",
-      "description": "Concept model and render pipeline for the BlueBand motion band.",
-      "language": "Python",
-      "topics": ["wearable", "hardware", "cad"],
-      "url": "https://github.com/thomasvanpul/blueband-concept",
-      "flow": {
-        "id": "blueband",
-        "duration": 8.8,
-        "stages": [
-          ["CAD", "enclosure, Fusion 360"],
-          ["PCB", "KiCad, custom board"],
-          ["FIRMWARE", "sensor loop"],
-          ["APP", "React front end"]
-        ]
-      }
-    },
-    {
       "name": "Finance-Tracker",
-      "description": "Personal finance app with Plaid ingest, Postgres ledger, typed API.",
+      "description": "Numeris: personal finance app with bank sync, CSV import and live market data",
       "language": "TypeScript",
-      "topics": ["finance", "plaid", "postgres"],
+      "topics": ["profile-feature", "numeris", "personal-finance", "postgresql", "react", "typescript"],
       "url": "https://github.com/thomasvanpul/Finance-Tracker",
-      "flow": {
-        "id": "numeris",
-        "duration": 11.0,
+      "default_branch": "main",
+      "pushed_at": "2026-08-18T04:03:24Z",
+      "profile_config": {
+        "diagram": "flow",
         "stages": [
           ["BANK", "Plaid link"],
           ["INGEST", "Node service"],
@@ -36,34 +20,26 @@
           ["API", "typed endpoints"],
           ["UI", "React, daily use"]
         ],
-        "side_input": {
-          "label": "MARKET DATA",
-          "sublabel": "Yahoo Finance",
-          "connects_to": 1
-        }
+        "side_input": ["MARKET DATA", "Yahoo Finance"]
+      }
+    },
+    {
+      "name": "blueband-concept",
+      "description": "BlueBand product concept model — Blender build + canonical renders",
+      "language": "Python",
+      "topics": ["profile-feature", "blender", "cad", "hardware", "product-design", "wearable"],
+      "url": "https://github.com/thomasvanpul/blueband-concept",
+      "default_branch": "main",
+      "pushed_at": "2026-08-17T17:03:35Z",
+      "profile_config": {
+        "diagram": "flow",
+        "stages": [
+          ["CAD", "enclosure, Fusion 360"],
+          ["PCB", "KiCad, custom board"],
+          ["FIRMWARE", "sensor loop"],
+          ["APP", "React front end"]
+        ]
       }
     }
-  ],
-  "orbit": {
-    "rings": [
-      {
-        "rx": 470,
-        "ry": 116,
-        "duration": 46,
-        "items": ["Python", "TypeScript", "React", "Node", "PostgreSQL"]
-      },
-      {
-        "rx": 330,
-        "ry": 82,
-        "duration": 33,
-        "items": ["Fusion 360", "Ansys FEA", "SimScale CFD", "KiCad"]
-      },
-      {
-        "rx": 200,
-        "ry": 50,
-        "duration": 22,
-        "items": ["TIG welding", "FDM printing", "composite layup"]
-      }
-    ]
-  }
+  ]
 }
