@@ -46,10 +46,14 @@ def _assert_unchanged(snapshot: dict[Path, str]) -> None:
         assert path.read_text(encoding="utf-8") == body, f"{path} was modified"
 
 
-def test_zero_featured_repos_raises_and_leaves_disk_untouched(tmp_path):
+def test_zero_featured_repos_raises_and_leaves_disk_untouched(tmp_path, monkeypatch):
     out_dir, snapshot = _seed_out(tmp_path)
     orbit = _write_orbit(tmp_path)
     fixture = tmp_path / "unused.json"
+
+    # This test asserts the "no featured repos" bail-out; keep the CI-only
+    # PROFILE_STATS_TOKEN gate out of the way so the earlier error surfaces.
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
 
     with patch.object(gh, "fetch_featured_repos", return_value=[]):
         with pytest.raises(build.BuildError, match="no featured repos"):
@@ -62,10 +66,14 @@ def test_zero_featured_repos_raises_and_leaves_disk_untouched(tmp_path):
         sorted(p.name for p in snapshot if p.parent.name == "assets")
 
 
-def test_api_failure_raises_and_leaves_disk_untouched(tmp_path):
+def test_api_failure_raises_and_leaves_disk_untouched(tmp_path, monkeypatch):
     out_dir, snapshot = _seed_out(tmp_path)
     orbit = _write_orbit(tmp_path)
     fixture = tmp_path / "unused.json"
+
+    # Avoid the CI-only PROFILE_STATS_TOKEN gate so the fetch-repos error
+    # is what surfaces here.
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
 
     def boom(_token, _owner=None):
         raise gh.GitHubError("HTTP 502 for /users/thomasvanpul/repos: bad gateway")
@@ -214,11 +222,14 @@ def test_streak_computation_with_gap():
     assert gh.current_streak([]) == 0
 
 
-def test_missing_profile_yml_falls_back_to_plain_card(tmp_path):
+def test_missing_profile_yml_falls_back_to_plain_card(tmp_path, monkeypatch):
     out_dir = tmp_path
     (out_dir / "assets").mkdir()
     orbit = _write_orbit(tmp_path)
     fixture = tmp_path / "unused.json"
+
+    # Test doesn't supply a stats_token, so avoid the CI gate.
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
 
     api_repo = {
         "name": "plain-repo",
