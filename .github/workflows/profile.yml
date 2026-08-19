@@ -38,33 +38,27 @@ jobs:
       - name: Install build dependencies
         run: pip install --upgrade pip PyYAML pytest
 
-      - name: Run tests (unit + live discovery smoke)
+      - name: Run tests (unit + live API smoke)
         env:
-          # Passed so the live smoke test in tests/test_live_smoke.py runs
+          # Passed so the live smoke tests in tests/test_live_smoke.py run
           # against the real API — the whole point is to catch endpoint /
-          # scope regressions like the /user/repos → /users/{owner}/repos
-          # fix before the build step.
+          # scope regressions (e.g. the earlier /user/repos → /users/{owner}/repos
+          # fix, or a viewer → user(login:) regression on the contributions
+          # query) before the build step.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python -m pytest -q
 
       - name: Build profile
         env:
-          # Repo discovery: deliberately GITHUB_TOKEN only — no PAT fallback.
-          # This build is public-repos-only by design: what shows up on my
-          # profile should be exactly what any anonymous visitor can already
-          # see. Introducing a PAT here would silently widen what the build
-          # can read (private repos, other users' .profile.yml) without a
-          # corresponding change to the visible output, which is a footgun.
+          # Both repo discovery and the contributions panel now run against
+          # GITHUB_TOKEN. Discovery uses /users/{owner}/repos (public,
+          # installation-token-friendly) and the contributions GraphQL call
+          # targets user(login:) rather than viewer, so both work with the
+          # installation token. The earlier PROFILE_STATS_TOKEN classic PAT
+          # is no longer needed and has been removed from the workflow.
+          # Rationale: the fewer credentials this build depends on, the
+          # fewer credentials can fail or expire without notice.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Contributions panel: a classic PAT with `read:user` scope ONLY,
-          # used solely for the contributionsCollection GraphQL call. It must
-          # NOT have `repo` scope — the point of splitting it out is so this
-          # token cannot read private repo contents. Private contributions
-          # come back as anonymised counts under read:user, which is exactly
-          # what we want (totals, no private repo names). If the secret is
-          # absent the build skips the panel rather than failing, so a fork
-          # can run this workflow without needing to configure it.
-          PROFILE_STATS_TOKEN: ${{ secrets.PROFILE_STATS_TOKEN }}
         run: python -m generators.build
 
       - name: Commit if changed

@@ -1,9 +1,15 @@
-"""Contributions panel — four large mono figures under captions.
+"""Contributions panel — three large mono figures under captions.
 
 Visual language matches hero/flow: hairline scale on top, monospace type,
 transparent background, dark/light foreground swap. Animation is confined to
 a single blinking cursor next to the CURRENT STREAK number — the one figure
 whose value actually changes day-to-day. Nothing else moves.
+
+Only three columns because a separate PRIVATE count is unobtainable for the
+profile owner: `restrictedContributionsCount` is viewer-relative and is
+structurally 0 when the viewer can see everything. Private commits are
+already folded into the CONTRIBUTIONS total for the owner. See the query
+comment in generators/github.py for the full reasoning.
 """
 from __future__ import annotations
 
@@ -63,18 +69,13 @@ def _fmt(n: int) -> str:
 def render(theme: str, stats: dict) -> str:
     fg, _ = palette(theme)
 
-    restricted = stats.get("restricted") or 0
-
-    # Column spec: (number, caption, sub, cursor). "repos_committed_to" is
-    # deliberately omitted — under the CI token's read:user scope it counts
-    # only public repos, which would understate the true figure.
+    # Column spec: (number, caption, sub, cursor). "repos_committed_to" and
+    # a separate "PRIVATE" count are deliberately omitted — see module docstring.
     columns: list[tuple[str, str, str | None, bool]] = [
         (_fmt(stats["total"]), "CONTRIBUTIONS", None, False),
+        (_fmt(stats["current_streak"]), "CURRENT STREAK", "DAYS", True),
+        (_fmt(stats["longest_streak"]), "LONGEST STREAK", "DAYS", False),
     ]
-    if restricted:
-        columns.append((_fmt(restricted), "PRIVATE", "CONTRIBUTIONS", False))
-    columns.append((_fmt(stats["current_streak"]), "CURRENT STREAK", "DAYS", True))
-    columns.append((_fmt(stats["longest_streak"]), "LONGEST STREAK", "DAYS", False))
 
     n = len(columns)
     inner = VIEW_W - 2 * MARGIN_X

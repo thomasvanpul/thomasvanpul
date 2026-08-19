@@ -50,9 +50,20 @@ def _flow_id(repo_name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", repo_name.lower()).strip("-")
 
 
-def _load_data(token: str | None, stats_token: str | None,
-               fixture_path: Path, orbit_path: Path) -> dict:
-    """Load the unified data dict. Raises BuildError on any failure."""
+def _load_data(token: str | None, fixture_path: Path, orbit_path: Path) -> dict:
+    """Load the unified data dict. Raises BuildError on any failure.
+
+    Both repo discovery and the contributions GraphQL call now run against
+    GITHUB_TOKEN — the discovery endpoint is /users/{owner}/repos (public,
+    installation-token-friendly) and the contributions query targets
+    user(login:) rather than viewer, so it too works with the installation
+    token. This is why the previous PROFILE_STATS_TOKEN split is gone.
+
+    If token is absent (local `make preview` without an exported token) the
+    build loads the fixture and skips the contributions panel — the panel
+    can't be built without a real API call, and the fixture path is only
+    for offline layout previews.
+    """
     orbit_cfg = json.loads(orbit_path.read_text(encoding="utf-8"))
 
     if token:
@@ -60,42 +71,33 @@ def _load_data(token: str | None, stats_token: str | None,
             raw = gh.fetch_featured_repos(token, PROFILE_OWNER)
         except gh.GitHubError as e:
             raise BuildError(f"failed to fetch repos: {e}") from e
+        # Short-circuit the empty-discovery case before spending a GraphQL
+        # call on contributions — _validate would raise anyway, and this
+        # keeps the "no featured repos" test independent of contributions
+        # mocking.
+        if not raw:
+            raise BuildError("no featured repos (topic 'profile-feature' matched 0 repos)")
         featured = [_repo_from_api(r, token) for r in raw]
+        try:
+            contributions = gh.fetch_contributions(token, PROFILE_OWNER)
+        except gh.GitHubError as e:
+            raise BuildError(f"failed to fetch contributions: {e}") from e
         data = {
             "owner": PROFILE_OWNER,
             "repo": PROFILE_REPO,
             "branch": PROFILE_BRANCH,
             "featured": featured,
             "orbit": orbit_cfg,
+            "contributions": contributions,
         }
     else:
-        print("no GITHUB_TOKEN, loading fixture", file=sys.stderr)
+        print("no GITHUB_TOKEN, loading fixture (contributions panel skipped)",
+              file=sys.stderr)
         data = json.loads(fixture_path.read_text(encoding="utf-8"))
         data["orbit"] = orbit_cfg
-
-    data["featured"] = _sort_featured(data["featured"])
-
-    if stats_token:
-        try:
-            data["contributions"] = gh.fetch_contributions(stats_token)
-        except gh.GitHubError as e:
-            raise BuildError(f"failed to fetch contributions: {e}") from e
-    else:
-        # In CI the panel is required — the whole point of the split token
-        # is to make CI output deterministic. Allowing a token-absent commit
-        # would flip-flop the panel in and out of the README as the secret
-        # gets added/removed. Local runs skip the panel so `make preview`
-        # still works offline.
-        if os.environ.get("GITHUB_ACTIONS") == "true":
-            raise BuildError(
-                "PROFILE_STATS_TOKEN not set in CI — refusing to publish a "
-                "README without the contributions panel (would flip-flop). "
-                "Add the secret or unset GITHUB_ACTIONS to skip locally."
-            )
-        print("no PROFILE_STATS_TOKEN, skipping contributions panel (local run)",
-              file=sys.stderr)
         data["contributions"] = None
 
+    data["featured"] = _sort_featured(data["featured"])
     return data
 
 
@@ -335,14 +337,11 @@ def _write_all(out_dir: Path, variants: dict[str, dict[str, str]],
 def build(fixture_path: Path = DEFAULT_REPOS_FIXTURE,
           orbit_path: Path = DEFAULT_ORBIT_CONFIG,
           out_dir: Path = DEFAULT_OUT,
-          token: str | None = None,
-          stats_token: str | None = None) -> list[Path]:
+          token: str | None = None) -> list[Path]:
     if token is None:
         token = os.environ.get("GITHUB_TOKEN") or None
-    if stats_token is None:
-        stats_token = os.environ.get("PROFILE_STATS_TOKEN") or None
 
-    data = _load_data(token, stats_token, fixture_path, orbit_path)
+    data = _load_data(token, fixture_path, orbit_path)
     _validate(data)
     variants = _render_svgs_in_memory(data)
     filenames = _hash_variants(variants)

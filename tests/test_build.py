@@ -46,14 +46,10 @@ def _assert_unchanged(snapshot: dict[Path, str]) -> None:
         assert path.read_text(encoding="utf-8") == body, f"{path} was modified"
 
 
-def test_zero_featured_repos_raises_and_leaves_disk_untouched(tmp_path, monkeypatch):
+def test_zero_featured_repos_raises_and_leaves_disk_untouched(tmp_path):
     out_dir, snapshot = _seed_out(tmp_path)
     orbit = _write_orbit(tmp_path)
     fixture = tmp_path / "unused.json"
-
-    # This test asserts the "no featured repos" bail-out; keep the CI-only
-    # PROFILE_STATS_TOKEN gate out of the way so the earlier error surfaces.
-    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
 
     with patch.object(gh, "fetch_featured_repos", return_value=[]):
         with pytest.raises(build.BuildError, match="no featured repos"):
@@ -66,14 +62,10 @@ def test_zero_featured_repos_raises_and_leaves_disk_untouched(tmp_path, monkeypa
         sorted(p.name for p in snapshot if p.parent.name == "assets")
 
 
-def test_api_failure_raises_and_leaves_disk_untouched(tmp_path, monkeypatch):
+def test_api_failure_raises_and_leaves_disk_untouched(tmp_path):
     out_dir, snapshot = _seed_out(tmp_path)
     orbit = _write_orbit(tmp_path)
     fixture = tmp_path / "unused.json"
-
-    # Avoid the CI-only PROFILE_STATS_TOKEN gate so the fetch-repos error
-    # is what surfaces here.
-    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
 
     def boom(_token, _owner=None):
         raise gh.GitHubError("HTTP 502 for /users/thomasvanpul/repos: bad gateway")
@@ -120,7 +112,7 @@ def test_contributions_fetch_failure_leaves_disk_untouched(tmp_path):
         "fork": False,
     }
 
-    def boom(_token):
+    def boom(_token, _owner=None):
         raise gh.GitHubError("GraphQL HTTP 502: bad gateway")
 
     with patch.object(gh, "fetch_featured_repos", return_value=[api_repo]), \
@@ -128,71 +120,9 @@ def test_contributions_fetch_failure_leaves_disk_untouched(tmp_path):
          patch.object(gh, "fetch_contributions", side_effect=boom):
         with pytest.raises(build.BuildError, match="failed to fetch contributions"):
             build.build(fixture_path=fixture, orbit_path=orbit, out_dir=out_dir,
-                        token="fake-token", stats_token="fake-stats-token")
+                        token="fake-token")
 
     _assert_unchanged(snapshot)
-
-
-def test_ci_without_stats_token_fails_loudly(tmp_path, monkeypatch):
-    """In CI, missing PROFILE_STATS_TOKEN must fail rather than skip the panel.
-
-    Otherwise the README would flip-flop between having the panel and not
-    having it every time the secret was added/removed.
-    """
-    out_dir, snapshot = _seed_out(tmp_path)
-    orbit = _write_orbit(tmp_path)
-    fixture = tmp_path / "unused.json"
-
-    monkeypatch.setenv("GITHUB_ACTIONS", "true")
-
-    api_repo = {
-        "name": "some-repo",
-        "html_url": "https://github.com/thomasvanpul/some-repo",
-        "default_branch": "main",
-        "description": "desc",
-        "language": "Python",
-        "topics": ["profile-feature"],
-        "pushed_at": "2026-08-01T00:00:00Z",
-        "archived": False,
-        "fork": False,
-    }
-    with patch.object(gh, "fetch_featured_repos", return_value=[api_repo]), \
-         patch.object(gh, "fetch_profile_config", return_value=None):
-        with pytest.raises(build.BuildError, match="PROFILE_STATS_TOKEN not set in CI"):
-            build.build(fixture_path=fixture, orbit_path=orbit, out_dir=out_dir,
-                        token="fake-token", stats_token=None)
-
-    _assert_unchanged(snapshot)
-
-
-def test_local_without_stats_token_skips_panel(tmp_path, monkeypatch):
-    """Same conditions locally: build succeeds, panel is skipped."""
-    out_dir = tmp_path
-    (out_dir / "assets").mkdir()
-    orbit = _write_orbit(tmp_path)
-    fixture = tmp_path / "unused.json"
-
-    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
-
-    api_repo = {
-        "name": "some-repo",
-        "html_url": "https://github.com/thomasvanpul/some-repo",
-        "default_branch": "main",
-        "description": "desc",
-        "language": "Python",
-        "topics": ["profile-feature"],
-        "pushed_at": "2026-08-01T00:00:00Z",
-        "archived": False,
-        "fork": False,
-    }
-    with patch.object(gh, "fetch_featured_repos", return_value=[api_repo]), \
-         patch.object(gh, "fetch_profile_config", return_value=None):
-        build.build(fixture_path=fixture, orbit_path=orbit, out_dir=out_dir,
-                    token="fake-token", stats_token=None)
-
-    readme = (out_dir / "README.md").read_text(encoding="utf-8")
-    assert "assets/stats." not in readme
-    assert "output/github-contribution-grid-snake" in readme
 
 
 def test_streak_computation_with_gap():
@@ -222,14 +152,11 @@ def test_streak_computation_with_gap():
     assert gh.current_streak([]) == 0
 
 
-def test_missing_profile_yml_falls_back_to_plain_card(tmp_path, monkeypatch):
+def test_missing_profile_yml_falls_back_to_plain_card(tmp_path):
     out_dir = tmp_path
     (out_dir / "assets").mkdir()
     orbit = _write_orbit(tmp_path)
     fixture = tmp_path / "unused.json"
-
-    # Test doesn't supply a stats_token, so avoid the CI gate.
-    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
 
     api_repo = {
         "name": "plain-repo",
@@ -242,9 +169,11 @@ def test_missing_profile_yml_falls_back_to_plain_card(tmp_path, monkeypatch):
         "archived": False,
         "fork": False,
     }
+    contribs = {"total": 1000, "current_streak": 5, "longest_streak": 12}
 
     with patch.object(gh, "fetch_featured_repos", return_value=[api_repo]), \
-         patch.object(gh, "fetch_profile_config", return_value=None):
+         patch.object(gh, "fetch_profile_config", return_value=None), \
+         patch.object(gh, "fetch_contributions", return_value=contribs):
         build.build(fixture_path=fixture, orbit_path=orbit,
                     out_dir=out_dir, token="fake-token")
 

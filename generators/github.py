@@ -129,11 +129,23 @@ def fetch_profile_config(token: str, owner: str, repo: str, branch: str) -> dict
 
 # ---- Contributions (GraphQL) ---------------------------------------------
 
+# NOTE on `restrictedContributionsCount` (deliberately omitted): the field is
+# viewer-relative — it counts contributions the *viewer* cannot see. When the
+# viewer is the profile owner (any token I own), the owner can see everything,
+# so the field is structurally 0 regardless of token scope. GitHub already
+# folds private commits into contributionCalendar.totalContributions for the
+# owner, so the total is complete. No separate "PRIVATE" figure is obtainable
+# for an owner-scoped call, and the earlier three-vs-four column diagnostic
+# was a misread.
+#
+# NOTE on `user(login:)` vs `viewer`: `viewer` requires the query to be run as
+# a user, which the Actions installation token (GITHUB_TOKEN) is not. Using
+# `user(login:)` makes the same calendar totals reachable with GITHUB_TOKEN,
+# so the build no longer needs a second classic PAT for this call.
 _CONTRIB_QUERY = """
-query {
-  viewer {
+query($login: String!) {
+  user(login: $login) {
     contributionsCollection {
-      restrictedContributionsCount
       contributionCalendar {
         totalContributions
         weeks {
@@ -149,8 +161,11 @@ query {
 """.strip()
 
 
-def _graphql(token: str, query: str) -> dict:
-    body = json.dumps({"query": query}).encode()
+def _graphql(token: str, query: str, variables: dict | None = None) -> dict:
+    payload: dict = {"query": query}
+    if variables is not None:
+        payload["variables"] = variables
+    body = json.dumps(payload).encode()
     req = urllib.request.Request(GRAPHQL_URL, data=body, method="POST", headers={
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
@@ -210,24 +225,23 @@ def longest_streak(days: list[dict]) -> int:
     return best
 
 
-def fetch_contributions(token: str) -> dict:
-    """Return contribution stats for the authenticated user, last 12 months.
+def fetch_contributions(token: str, owner: str = "thomasvanpul") -> dict:
+    """Return contribution stats for `owner`, last 12 months.
 
-    Keys: total, restricted, current_streak, longest_streak.
+    Keys: total, current_streak, longest_streak.
 
-    Per-repo counts are deliberately not returned. A read:user token counts
-    only what it can see, so any per-repo figure would understate private
-    work — calendar totals and streaks are safe because they come from the
-    server's per-day totals rather than from repo enumeration.
+    Per-repo counts are deliberately not returned. calendar totals and
+    streaks are safe because they come from the server's per-day totals
+    rather than from repo enumeration. See the query comment for why
+    restrictedContributionsCount is not fetched.
 
     Raises GitHubError on any HTTP, network, or GraphQL failure.
     """
-    data = _graphql(token, _CONTRIB_QUERY)
-    cc = data["viewer"]["contributionsCollection"]
+    data = _graphql(token, _CONTRIB_QUERY, {"login": owner})
+    cc = data["user"]["contributionsCollection"]
     days = _flatten_days(cc["contributionCalendar"])
     return {
         "total": cc["contributionCalendar"]["totalContributions"],
-        "restricted": cc["restrictedContributionsCount"],
         "current_streak": current_streak(days),
         "longest_streak": longest_streak(days),
     }
