@@ -67,8 +67,8 @@ def test_api_failure_raises_and_leaves_disk_untouched(tmp_path):
     orbit = _write_orbit(tmp_path)
     fixture = tmp_path / "unused.json"
 
-    def boom(_token):
-        raise gh.GitHubError("HTTP 502 for /user/repos: bad gateway")
+    def boom(_token, _owner=None):
+        raise gh.GitHubError("HTTP 502 for /users/thomasvanpul/repos: bad gateway")
 
     with patch.object(gh, "fetch_featured_repos", side_effect=boom):
         with pytest.raises(build.BuildError, match="failed to fetch repos"):

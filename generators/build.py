@@ -57,7 +57,7 @@ def _load_data(token: str | None, stats_token: str | None,
 
     if token:
         try:
-            raw = gh.fetch_featured_repos(token)
+            raw = gh.fetch_featured_repos(token, PROFILE_OWNER)
         except gh.GitHubError as e:
             raise BuildError(f"failed to fetch repos: {e}") from e
         featured = [_repo_from_api(r, token) for r in raw]

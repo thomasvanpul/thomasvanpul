@@ -75,14 +75,21 @@ def _next_link(link_header: str) -> str | None:
     return None
 
 
-def fetch_featured_repos(token: str) -> list[dict]:
-    """Return the authenticated user's opt-in featured repos.
+def fetch_featured_repos(token: str, owner: str = "thomasvanpul") -> list[dict]:
+    """Return `owner`'s opt-in featured public repos.
 
     Featured = topic 'profile-feature', not archived, not a fork.
     Pre-sorted by pushed_at descending; final ordering is applied in build.py
     after each repo's .profile.yml weight is known.
+
+    Uses GET /users/{owner}/repos rather than /user/repos so this works with
+    the Actions installation token (`GITHUB_TOKEN`), which is not a user and
+    cannot hit /user/repos. That endpoint choice also makes the
+    public-repos-only property STRUCTURAL rather than conventional: the
+    /users/{owner}/repos endpoint only ever returns public repos, so no PAT
+    misconfiguration downstream can widen what this build sees.
     """
-    url = f"{API_BASE}/user/repos?per_page=100&type=owner&sort=pushed"
+    url = f"{API_BASE}/users/{owner}/repos?per_page=100&type=owner&sort=pushed"
     all_repos = list(_paginate(url, token))
     featured = [
         r for r in all_repos

@@ -26,17 +26,26 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
       - name: Install build dependencies
-        run: pip install --upgrade pip PyYAML
+        run: pip install --upgrade pip PyYAML pytest
+
+      - name: Run tests (unit + live discovery smoke)
+        env:
+          # Passed so the live smoke test in tests/test_live_smoke.py runs
+          # against the real API — the whole point is to catch endpoint /
+          # scope regressions like the /user/repos → /users/{owner}/repos
+          # fix before the build step.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m pytest -q
 
       - name: Build profile
         env:
