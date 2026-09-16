@@ -91,9 +91,9 @@ Repo: [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/stats.9677df2-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/stats.a271bc1-light.svg">
-  <img alt="Contributions in the last 12 months" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/stats.9677df2-dark.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/stats.4cca8ee-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/stats.b509fa3-light.svg">
+  <img alt="Contributions in the last 12 months" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/stats.4cca8ee-dark.svg">
 </picture>
 
 
