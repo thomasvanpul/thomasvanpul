@@ -6,25 +6,26 @@ these strings into a fixed layout.
 
 # Which section the page is built around. One thing dominates and everything
 # else is smaller; averaging the two is what produced a page of seven equal
-# plates. "blueband" makes the object the focal point, "atrium" makes the
-# measurement the focal point. Nothing else in the page changes.
-DOMINANT = "blueband"
+# plates.
+#
+# Set to "atrium" on 2026-09-19, by Thomas: "atrium way too little". It is his
+# main project and it was getting the least space on the page -- a 760-wide
+# lattice below a 1200-wide render of a different project. The lattice now
+# takes the full column and is the first thing under his name, and BlueBand's
+# render is gone rather than shrunk (see SHOWROOMS).
+DOMINANT = "atrium"
 
 # Plate widths per option. Width is the only hierarchy lever a README has, and
 # it is also the divisor that sets apparent type size -- see svg/figures.py.
 LAYOUT = {
-    "blueband": {
-        "order": ["blueband-concept", "atrium", "Finance-Tracker"],
-        # 760 rather than 560 for the lattice. Width is the divisor for type,
-        # and it is the multiplier for everything else: at 560 the grid's pitch
-        # is 4.1 units and its lightest mark 0.9 wide, which rasterises to a
-        # hairline. At 760 the same picture is drawn with marks you can see.
-        "showroom_w": {"blueband-concept": 1200, "atrium": 760},
-        "figures_w": 560,
-    },
     "atrium": {
         "order": ["atrium", "blueband-concept", "Finance-Tracker"],
-        "showroom_w": {"blueband-concept": 620, "atrium": 1200},
+        # One key, because there is one showroom. Width is the divisor for
+        # type and the multiplier for everything else: at 760 the lattice's
+        # pitch was 4.1 units and its lightest mark 0.9 wide, a hairline. At
+        # the full 1200 the same frame is drawn with marks you can see, which
+        # is most of why it was reading as "too little".
+        "showroom_w": {"atrium": 1200},
         "figures_w": 900,
     },
 }
@@ -47,37 +48,43 @@ HERO_STANDFIRST = "**Design Engineering, Imperial College London.**"
 # screen. Where Thomas is from and where he works moved to the footer, which
 # is where the rest of the biography already lives.
 
-# The legend for the contribution field. It was 9px inside the plate, which is
-# 2.7px on a phone.
-FIELD_LEGEND = "One mark, one contribution, shaded by month"
+# Cut 2026-09-19 with the field it captioned: FIELD_LEGEND read "One mark, one
+# contribution, shaded by month". A picture that needs a caption to be read at
+# all is the caption doing the work, and the four figures below the plate were
+# already saying it in words. See svg/hero.py for the measurement.
 
-INTRO = (
-    "I build hardware and the software that runs it. Most of what is here is either "
-    "a thing that moves or a thing that tracks something."
-)
+# Second sentence cut 2026-09-19 -- "either a thing that moves or a thing that
+# tracks something" is a taxonomy of a list the reader is about to read anyway.
+INTRO = "I build hardware and the software that runs it."
 
-# The entry point. After the hero the eye had nowhere to go; this is where it
-# goes. Three lines, three anchors, one claim each -- which is what ninety
-# seconds actually buys a reader. It is markdown and not a plate because every
-# line of it is a link, and a link cannot exist inside an <img>.
-START_HERE_HEADING = "Start here"
-
-START_HERE = [
-    ("BlueBand", "blueband", "a wearable motion band — enclosure, board, firmware, app"),
-    ("Numeris", "numeris", "a finance app I use daily — Plaid in, a typed API out"),
-    ("Atrium", "atrium", "a spatial desktop in Swift and Metal, and its measurement"),
-]
+# "Start here" was cut 2026-09-19, and it is the one cut here that was not
+# asked for by name. It was a heading and three links, one per project, each
+# with a one-line claim after it. Two of the four points above remove its
+# reason to exist: Atrium is now the first thing under the name rather than the
+# fourth, and every project body is now the single line that Start here was
+# already setting -- so the page stated each project's claim twice, a screen
+# apart, and the first statement was the one the eye hit first. Reinstating it
+# is this block and `_start_here` in build.py.
 
 # Per-repo prose. Keys match the "name" field in data/repos.sample.json.
 FEATURED = {
     "blueband-concept": {
         "heading": "BlueBand",
-        "body": (
-            "A wearable motion band, in development. One person doing the whole chain: "
-            "the enclosure has to fit the board, the board has to fit the sensor loop, "
-            "and the app has to make sense of what comes out."
-        ),
-        "repo_suffix": "concept model and the render pipeline. Web and CAD repos are private for now.",
+        # Three sentences became one, 2026-09-19. What the chain *is* was
+        # spelled out link by link -- enclosure fits board, board fits sensor
+        # loop, app reads the output -- which is the list in the first clause
+        # with a verb attached to each item.
+        "body": "A wearable motion band, in development — enclosure, board, firmware "
+                "and app, one person doing the whole chain.",
+        "repo_suffix": "concept model and the render pipeline. Web and CAD repos are private.",
+        # The build-chain strip goes too, and this is the judgement call in the
+        # task rather than a line of it. Thomas asked for the concept render
+        # gone and for BlueBand at "the same weight as the others"; Numeris
+        # carries no diagram, so a diagram here would leave BlueBand heavier
+        # than the section it is meant to match. The strip is the smaller of
+        # the two things it could have been, so it is the reversible one:
+        # deleting this key brings it back.
+        "flow": False,
         "flow_aria": "BlueBand build chain: CAD to PCB to firmware to app",
     },
     "Finance-Tracker": {
@@ -91,11 +98,12 @@ FEATURED = {
         # is what makes it a real project", which is the first sentence of the
         # first paragraph restated as a topic sentence. The list it introduced
         # is the only part that carried anything, so it is now a clause.
+        # Cut to one line, 2026-09-19. The list of what daily use forced --
+        # rate limits, dirty data, cache invalidation, latency -- was four
+        # examples of the claim in the clause before it.
         "body": [
-            "A personal finance app I use every day, which is why it exists: Plaid in, "
-            "market data alongside it, normalised into Postgres, out through a typed API. "
-            "Daily use is what makes it real — rate limits, dirty data, cache invalidation "
-            "and latency had to be dealt with rather than designed around.",
+            "A finance app I use daily: Plaid in, market data alongside it, normalised "
+            "into Postgres, out through a typed API. Daily use is what makes it real.",
         ],
         "repo_suffix": None,
         "flow": False,
@@ -129,22 +137,25 @@ ATRIUM = {
         ("Acceptance", "11 criteria, all UNMEASURED"),
         ("Interface", "3 of 19 designed elements built"),
     ],
-    # Three dense blocks became three short ones. Nothing true was dropped:
-    # the counts that were buried in prose are in the table above, and what is
-    # left in each paragraph is the one claim it exists to make.
+    # Cut again 2026-09-19, to two lines each at the profile column width.
+    # Nothing true was dropped and the third paragraph is intact in substance:
+    # what went was the restatement around it. "Moving forward through it is
+    # moving back through the history" is "depth is recency" said twice; "one
+    # frozen binary, 33 runs over 6.5 hours, 448 values compared per run" is
+    # the shape of the 13-of-33 figure rather than a second finding; and "it
+    # would be dishonest to file it as anything else" is the sentence before it
+    # defending itself. The honest-state claim itself is load-bearing and is
+    # still here in full -- see Atlas/Projects/Atrium/Verified-Record.md.
     "body": [
-        "A spatial computing environment for macOS — Swift and Metal, running as a "
-        "persistent desktop shell. It draws the machine's own record as a navigable "
-        "three-dimensional field: every mark is a real event, and depth is recency, "
-        "so moving forward through it is moving back through the history.",
-        "The part worth reading is the measurement. The suite returned a red verdict "
-        "on **`13 of 33` runs of unchanged code** — one frozen binary, 33 runs over "
-        "6.5 hours, 448 values compared per run. The scene was anchoring to "
-        "wall-clock time at process start; pinning it collapsed 393 drifting values "
-        "to 5 timings and 3 pixels of GPU noise.",
-        "**No users, no release, and the acceptance harness has never passed.** This "
-        "is evidence of engineering depth, not of delivery, and it would be "
-        "dishonest to file it as anything else.",
+        "A spatial desktop for macOS, in Swift and Metal. It draws the machine's own "
+        "record as a navigable three-dimensional field: every mark a real event, depth "
+        "is recency.",
+        "The measurement is the part worth reading. The suite returned a red verdict on "
+        "**`13 of 33` runs of unchanged code** — the scene was anchoring to wall-clock "
+        "time at process start, and pinning it collapsed 393 drifting values to 5 "
+        "timings and 3 pixels of GPU noise.",
+        "**No users, no release, and the acceptance harness has never passed.** "
+        "Engineering depth, not delivery.",
     ],
     "repo_line": "Private repo.",
     "figures_aria": "Atrium, measured: 18,470 lines of Swift across 75 files; 418 assertions covering 38% of the codebase; 218,016 real events from 31 repositories; 10 MB resident at 0% idle CPU.",
@@ -160,18 +171,16 @@ ALSO_RUNNING_HEADING = "Also running"
 ALSO_RUNNING = [
     (
         "Interstellar Sanctuary",
-        "Malaysia property launch map with an EdgeProp collaborator — "
-        "government-database crawlers feeding a searchable map, "
+        "Malaysia property launch map with an EdgeProp collaborator, "
         "[password-gated](https://interstellarsanctuary.com) while licensing is settled.",
     ),
     (
         "HFQ forming research",
-        "Hot Form Quench forming with Dr Nan Li at the Dyson School, remote since "
-        "Aug 2026 — aluminium, steel, titanium, fibre metal laminates.",
+        "Hot Form Quench forming with Dr Nan Li at the Dyson School, remote since Aug 2026.",
     ),
     (
         "Air defence economics",
-        "a self-directed paper; every figure in it regenerable from a CSV by one script.",
+        "a self-directed paper; every figure regenerable from a CSV by one script.",
     ),
     (
         "IRIS",
@@ -219,15 +228,19 @@ SHOWROOMS = {
     # lattice at 10x: 218,016 events from 31 repositories, every mark an event.
     "atrium": {
         "path": "showroom/atrium-lattice.png",
-        # Was (0.0, 0.10, 1.0, 0.92), which took the whole frame including the
-        # quiet top-left quadrant: 28.8% of its cells carried ink, and once the
-        # plate stopped painting a ground of its own there was nothing left to
-        # give that emptiness an edge -- it read as a smudge on the page rather
-        # than as a frame of anything. This is the dense band of the same still,
-        # 52.2% inked on the reduced grid, and at 132x62 it is a wide band
-        # rather than a near-square, which is the shape a supporting plate
-        # wants next to a full-column one.
-        "crop": (0.42, 0.44, 1.00, 0.86),
+        # Retightened 2026-09-19, when this became the full-column lead. The
+        # previous band, (0.42, 0.44, 1.00, 0.86), was chosen to sit at 760
+        # wide. Drawn at 1200 its left half is a void: mean darkness per sixth,
+        # left to right, was 1.3, 0.7, 2.0, 3.6, 5.3, 4.7 on the 0-9 scale, so
+        # the picture read as pushed into the right-hand third of its own
+        # frame. Measured, not eyeballed -- at 760 the same imbalance was there
+        # and small enough to miss.
+        #
+        # This band runs 4.2, 5.1, 5.8, 5.6, 5.2, 4.5: evenly inked across the
+        # full width, mean 5.07 against 2.95. Still a wide band at 132x69
+        # rather than the near-square that a deeper crop gives, because the
+        # lead image sets the height of the first screen.
+        "crop": (0.70, 0.56, 1.00, 0.80),
         "cols": 132,
         "aria": "The Atrium lattice at ten times magnification, drawn as a "
                 "halftone dot screen: thousands of small marks, each one a real "
@@ -235,17 +248,17 @@ SHOWROOMS = {
         "caption": "A real frame at 10x: every mark is one event, from one of "
                    "31 repositories.",
     },
-    "blueband-concept": {
-        "url": "https://raw.githubusercontent.com/thomasvanpul/blueband-concept"
-               "/main/renders/01_three_quarter_with_band.png",
-        "crop": (0.04, 0.14, 0.96, 0.84),
-        "cols": 112,
-        "aria": "BlueBand concept render: the module and band, three-quarter view, "
-                "drawn as a halftone dot screen",
-        "caption": "Canonical render from the concept repo, screened to monochrome "
-                   "at build time.",
-    },
 }
+
+# BlueBand's showroom was removed 2026-09-19, by Thomas: "blueband getting way
+# too much, and no i don't want that band there". It was the three-quarter
+# render of the module and band, screened to a 112-column halftone and drawn at
+# the full 1200 column -- the largest object on the page, above the project that
+# was supposed to be leading it. It is not shrunk to a smaller plate because a
+# smaller version of an unwanted picture is still the picture. The source is
+# public and unchanged at
+# raw.githubusercontent.com/thomasvanpul/blueband-concept/main/renders/01_three_quarter_with_band.png,
+# so reinstating it is this dict entry and nothing else.
 
 SNAKE_DARK_URL = "https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/output/github-contribution-grid-snake-dark.svg"
 SNAKE_LIGHT_URL = "https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/output/github-contribution-grid-snake.svg"

@@ -492,35 +492,15 @@ def _readout_line(contributions: dict | None) -> str:
     """The hero's four figures, as markdown.
 
     They were drawn inside the plate at 26px and 9px on a 1200 viewBox, which
-    is 7.8px and 2.7px in a 358px phone column. The numbers are still derived
-    in `svg/hero.py`, beside the field they describe; this only sets them.
+    is 7.8px and 2.7px in a 358px phone column. Since the unit field was cut
+    this is the only statement of the record above the footer, which raises
+    rather than lowers its claim on the space. The numbers are still derived in
+    `svg/hero.py`; this only sets them.
     """
     figs = hero.readout_figures(contributions or {})
     if not figs:
         return ""
     return " &nbsp;·&nbsp; ".join(f"**{n}** {cap}" for n, cap in figs)
-
-
-def _field_legend(contributions: dict | None) -> str:
-    span = hero.field_span(contributions or {})
-    legend = content.FIELD_LEGEND
-    tail = f" &nbsp;·&nbsp; {span}" if span else ""
-    return f"<sub>{legend}{tail}</sub>"
-
-
-def _start_here() -> str:
-    """The entry point.
-
-    After the hero the eye had nowhere to go. It goes here: three names, three
-    anchors, one claim each. It is markdown rather than a plate because every
-    line of it is a link, and a link cannot exist inside an <img>-referenced
-    SVG -- which is also most of the argument for where the line between plate
-    and prose falls.
-    """
-    lines = [f"### {content.START_HERE_HEADING}\n"]
-    for name, anchor, claim in content.START_HERE:
-        lines.append(f"**[{name}](#{anchor})** &nbsp;·&nbsp; {claim}\n")
-    return "\n".join(lines)
 
 
 def _sections(data: dict, filenames: dict[str, str]) -> list[str]:
@@ -572,10 +552,8 @@ def _render_readme(data: dict, filenames: dict[str, str]) -> str:
     readout = _readout_line(contributions)
     if readout:
         lines.append(readout + "\n")
-    lines.append(_field_legend(contributions) + "\n")
     lines.append(content.HERO_STANDFIRST + "\n")
     lines.append(content.INTRO + "\n")
-    lines.append(_start_here())
 
     lines.extend(_sections(data, filenames))
 

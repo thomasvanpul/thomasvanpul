@@ -8,6 +8,7 @@ from unittest.mock import patch
 import pytest
 
 from generators import build
+from generators import content
 from generators import github as gh
 
 
@@ -226,16 +227,40 @@ def test_every_generated_svg_is_well_formed_xml(tmp_path):
             raise AssertionError(f"{path.name} is not well-formed XML: {e}") from e
 
 
-def test_hero_draws_one_mark_per_contribution():
-    """The field's premise is one mark per contribution. Count them."""
+def test_hero_plots_no_contribution_field_and_still_derives_the_figures():
+    """The unit field is gone on purpose; this stops it coming back unnoticed.
+
+    It drew one mark per contribution, shaded by calendar month. The encoding
+    was real and illegible: two bands at 0.60 and 0.34 opacity with 1-unit
+    month rules, on a 1200 viewBox that renders at 0.33x on a phone, which is
+    2.0px of pitch. Thomas read it as "all the dots under my name doesn\'t make
+    sense" on 2026-09-19 and it was removed rather than relabelled.
+
+    This is not the old assertion loosened. The old one counted the marks and
+    the marks are gone, so counting them can only be rewritten or deleted --
+    and deleting it would leave nothing to notice a field quietly returning,
+    which is the failure this file exists to catch. So it asserts the opposite
+    fact, and separately that the record itself did *not* leave: the four
+    figures are still derived here, and build.py sets them in markdown where
+    they are legible at every width.
+    """
     from generators.svg import hero
 
     spec = [("2026-07-%02d" % i, 3) for i in range(1, 11)] + \
            [("2026-08-%02d" % i, 5) for i in range(1, 11)]
     contrib = _contrib(spec)
     svg = hero.render("NAME", contrib)
-    # Each mark is one "h.01" segment; nothing else in the hero emits one.
-    assert svg.count("h.01") == contrib["total"] == 80
+
+    # Each mark was one "h.01" segment, and nothing else in the hero emits one.
+    assert "h.01" not in svg, "the per-contribution field is back in the hero"
+    # A field of 2,774 marks was most of the plate's height; 144 units is the
+    # name, its rule and the planet, and nothing below them.
+    assert 'viewBox="0 0 1200 144"' in svg
+
+    figures = hero.readout_figures(contrib)
+    assert [caption for _, caption in figures] == [
+        "contributions", "days active", "busiest day", "longest streak"]
+    assert figures[0][0] == "80" == f"{contrib['total']}"
 
 
 def test_tokenless_build_reproduces_the_tokened_one(tmp_path, monkeypatch):
@@ -279,10 +304,19 @@ def test_tokenless_build_reproduces_the_tokened_one(tmp_path, monkeypatch):
         build.build(fixture_path=fixture, orbit_path=orbit, out_dir=live,
                     token="fake-token")
     tokened = (live / "README.md").read_text(encoding="utf-8")
-    # The marks live in the hero asset; the figures they add up to live in the
-    # README, because inside the plate they rendered at 7.8px on a phone.
+    # That the contributions actually reached the render, checked without the
+    # unit field, which used to be the proof and was removed on 2026-09-19.
+    # What still encodes them in the hero is the planet: six rings, one per
+    # month, each drawn for its share of the busiest of the six. So a hero
+    # built with this data must differ from one built with none.
     hero_svg = next((live / "assets").glob("hero.*.svg")).read_text(encoding="utf-8")
-    assert "h.01" in hero_svg
+    from generators.svg import hero as hero_mod
+    assert hero_svg != hero_mod.render(content.HERO_NAME, None), (
+        "the hero is identical with and without contributions, so nothing in "
+        "it carries them any more")
+    assert "stroke-dasharray" in hero_svg
+    # The figures those marks added up to live in the README, because inside
+    # the plate they rendered at 7.8px on a phone.
     assert "days active" in tokened
 
     # Second build, no token, reading the cache the first one committed.

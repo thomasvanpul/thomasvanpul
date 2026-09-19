@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 184" width="900" height="184" role="img" aria-label="Atrium, measured: 18,470 lines of Swift across 75 files; 418 assertions covering 38% of the codebase; 218,016 real events from 31 repositories; 10 MB resident at 0% idle CPU.">
+  <style>
+    svg { color: #f6eaec; --ground: #0d1117; }
+    .ground { fill: var(--ground); }
+    @media (prefers-color-scheme: light) {
+      svg { color: #080302; --ground: #ffffff; }
+    }
+  </style>
+  <rect class="ground" width="100%" height="100%"/>
+  <text x="0" y="118.7" style="font:600 85.2px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:3.6px" fill="currentColor" fill-opacity=".95">18,470</text>
+  <text x="3" y="157.2" style="font:400 30.8px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:2.9px" fill="currentColor" fill-opacity=".58">LINES OF SWIFT, 75 FILES</text>
+  <line x1="0" y1="163.1" x2="900" y2="163.1" stroke="currentColor" stroke-opacity=".16" stroke-width="1"/>
+</svg>

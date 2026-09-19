@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 144" width="1200" height="144" role="img" aria-label="Thomas van Pul, Design Engineering at Imperial College London. 2,774 contributions across 78 active days in the 370 days to 2026-09-18; busiest day 151.">
+  <style>
+    .name { font: 600 60px ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; letter-spacing: 8px; fill: currentColor; }
+    .pip { fill: #e84552; offset-path: path("M 844 88 A 156 24 0 1 1 1156 88 A 156 24 0 1 1 844 88"); offset-rotate: 0deg; animation: orbit 24s linear infinite; }
+    @keyframes orbit { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+  </style>
+
+  <style>
+    svg { color: #f6eaec; --ground: #0d1117; }
+    .ground { fill: var(--ground); }
+    @media (prefers-color-scheme: light) {
+      svg { color: #080302; --ground: #ffffff; }
+    }
+  </style>
+  <rect class="ground" width="100%" height="100%"/>
+  <g transform="rotate(-7.0 1000.0 88.0)">
+    <ellipse cx="1000.0" cy="88.0" rx="156" ry="24" fill="none" stroke="currentColor" stroke-opacity="0.22" stroke-width="1.3" stroke-dasharray="1.5 642.8" stroke-linecap="round"/>
+    <ellipse cx="1000.0" cy="88.0" rx="135" ry="20" fill="none" stroke="currentColor" stroke-opacity="0.22" stroke-width="1.3" stroke-dasharray="1.5 554.9" stroke-linecap="round"/>
+    <ellipse cx="1000.0" cy="88.0" rx="114" ry="17" fill="none" stroke="currentColor" stroke-opacity="0.22" stroke-width="1.3" stroke-dasharray="1.5 468.5" stroke-linecap="round"/>
+    <ellipse cx="1000.0" cy="88.0" rx="93" ry="14" fill="none" stroke="currentColor" stroke-opacity="0.54" stroke-width="1.3" stroke-dasharray="180.0 203.6" stroke-linecap="round"/>
+    <ellipse cx="1000.0" cy="88.0" rx="73" ry="11" fill="none" stroke="currentColor" stroke-opacity="0.90" stroke-width="1.3" stroke-dasharray="301.1 0.5" stroke-linecap="round"/>
+    <ellipse cx="1000.0" cy="88.0" rx="55" ry="8" fill="none" stroke="currentColor" stroke-opacity="0.72" stroke-width="1.3" stroke-dasharray="167.2 59.3" stroke-linecap="round"/>
+    <path d="M 959.5 88.0 A 40.5 40.5 0 0 1 1040.5 88.0" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.1"/>
+    <circle class="ground" cx="1000.0" cy="88.0" r="27.0"/>
+    <circle cx="1000.0" cy="88.0" r="27.0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-opacity=".9"/>
+    <circle class="pip" cx="0" cy="0" r="5"/>
+  </g>
+
+  <line x1="0" y1="128" x2="630" y2="128" stroke="currentColor" stroke-opacity=".22" stroke-width="1"/>
+  <text class="name" x="0" y="100">THOMAS VAN PUL</text>
+</svg>

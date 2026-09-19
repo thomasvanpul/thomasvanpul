@@ -7,17 +7,6 @@ mark and are the only two elements here that encode nothing.
 
 What each element encodes
 -------------------------
-unit field     one mark per contribution — not per day. All `total` of them,
-               in chronological order, packed left-to-right and top-to-bottom
-               on a fixed pitch. Shading alternates per calendar month and a
-               hairline is dropped at each month boundary, so the width of
-               each tonal band is that month's volume.
-
-               A per-day bar chart was built first and thrown away: 292 of
-               the 370 days in this window have no contributions, so the
-               honest plot of them was four fifths empty canvas. The counts
-               are identical; only the unit is different. One mark per
-               contribution is the same record at the density it deserves.
 planet rings   the last six calendar months, outermost oldest. Each ring's
                drawn fraction is that month's share of the largest of the
                six, so the ring stack shows the work starting.
@@ -29,13 +18,29 @@ name           the only word in the plate, and the only one large enough to
 
 What left this file, and why
 ----------------------------
-The readout row and the rotating subtitle used to be drawn here, at 26px/9px
+The unit field left on 2026-09-19, and it is the reason this docstring is
+shorter than the figure. It packed all `total` marks on a 6-unit pitch and
+shaded them by calendar month, so the width of each tonal band was that
+month's volume. The encoding was real and it was never legible: the two bands
+are 0.60 and 0.34 opacity on a near-black ground, the month rules are
+1-unit hairlines, and a 1200 viewBox renders at 0.84x in GitHub's profile
+column and 0.33x on a phone -- 5.1px and 2.0px of pitch. At the second of
+those the whole field is one grey bar. Thomas read it as "all the dots under
+my name doesn't make sense", which is the correct reading of a picture whose
+meaning needs a caption to survive.
+
+It was also the third time the page stated the same record. The four figures
+directly under the plate say it in words, and the contribution snake in the
+footer says it as a calendar with a legible density ramp. The least legible
+of the three is the one that went.
+
+The readout row and the rotating subtitle left earlier, at 26px/9px
 and 15px. A README asset is a fixed-ratio image in a fluid column, so those
 read at 7.8px, 2.7px and 4.5px on a phone. They are now markdown directly
 under the plate: legible at every width, selectable, and visible to GitHub's
-search, which never sees text inside an <img>. `readout_figures` and
-`field_span` stay here so the numbers are still derived beside the field they
-describe -- build.py formats them, it does not compute them.
+search, which never sees text inside an <img>. `readout_figures` stays here so
+the numbers are still derived in this module -- build.py formats them, it does
+not compute them.
 
 What moves, and only this
 -------------------------
@@ -68,18 +73,11 @@ from . import ACCENT, field, palette, token
 from ..content import HERO_ARIA
 
 VIEW_W = 1200
-VIEW_H = 268
-
-# --- day field geometry ---------------------------------------------------
-# Flush left and flush right. These were 70 and 1130, a margin inside the
-# plate -- which is what a plate wants and a drawing on a page does not: with
-# the panel gone there is nothing for the inset to be inset *from*, so it read
-# as the hero sitting 57px to the right of every other line on the page.
-FIELD_X0 = 0.0
-FIELD_X1 = 1200.0
-FIELD_TOP_Y = 164.0         # first row of marks
-FIELD_PITCH = 6.0           # centre-to-centre spacing, both axes
-FIELD_DOT_W = 3.0           # stroke width of a single mark
+# 268 while the unit field ran from y=164 to y=248. With the field gone the
+# lowest mark is the rule under the name at y=128, and the leftover 140 units
+# were an empty third of the plate -- which on the page reads as a gap nobody
+# put there rather than as space.
+VIEW_H = 144
 
 # --- name block -----------------------------------------------------------
 NAME_X = 0.0
@@ -134,74 +132,14 @@ def _fmt(n: int) -> str:
     return f"{n:,}"
 
 
-def _x_for(index: int, n: int) -> float:
-    """Left-to-right position of day `index` of `n` across the field."""
-    if n <= 1:
-        return FIELD_X0
-    return FIELD_X0 + (FIELD_X1 - FIELD_X0) * index / (n - 1)
-
-
-def _unit_field(contrib: dict, fg: str) -> str:
-    """One mark per contribution, chronological, shaded by month.
-
-    Marks are emitted as zero-length `h.01` path segments with a round
-    linecap rather than as <circle> elements: at this count the circles cost
-    roughly three times the bytes for a mark the reader cannot tell apart.
-    Every coordinate lands on an integer because the pitch and origin are
-    both integers, which keeps the d-string short.
-    """
-    months = contrib.get("months") or []
-    total = contrib.get("total") or 0
-    if not months or total <= 0:
-        return ""
-
-    cols = int((FIELD_X1 - FIELD_X0) // FIELD_PITCH) + 1
-
-    def xy(k: int) -> tuple[int, int]:
-        return (int(FIELD_X0 + (k % cols) * FIELD_PITCH),
-                int(FIELD_TOP_Y + (k // cols) * FIELD_PITCH))
-
-    # Two alternating opacities so neighbouring months separate tonally.
-    bands: list[list[str]] = [[], []]
-    boundaries: list[str] = []
-    k = 0
-    for m_index, (_label, count) in enumerate(months):
-        if count <= 0:
-            continue
-        if k:
-            bx, by = xy(k)
-            boundaries.append(f"M{bx} {by - 3}v6")
-        band = bands[m_index % 2]
-        for _ in range(count):
-            x, y = xy(k)
-            band.append(f"M{x} {y}h.01")
-            k += 1
-
-    parts: list[str] = []
-    for band, op in zip(bands, (".60", ".34")):
-        if band:
-            parts.append(
-                f'  <path d="{"".join(band)}" stroke="{fg}" stroke-opacity="{op}" '
-                f'stroke-width="{FIELD_DOT_W}" stroke-linecap="round" fill="none"/>\n'
-            )
-    if boundaries:
-        parts.append(
-            f'  <path d="{"".join(boundaries)}" stroke="{fg}" stroke-opacity=".9" '
-            'stroke-width="1" fill="none"/>\n'
-        )
-    return "".join(parts)
-
-
-def field_span(contrib: dict) -> str:
-    """First and last month with any contribution in it, e.g. "2025-11 - 2026-09"."""
-    months = [m for m in (contrib.get("months") or []) if m[1] > 0]
-    if not months:
-        return ""
-    return f"{months[0][0]} - {months[-1][0]}" if len(months) > 1 else months[0][0]
-
-
 def readout_figures(contrib: dict) -> list[tuple[str, str]]:
-    """The four figures the field is a picture of. Derived here, set in markdown."""
+    """The contribution record, in four figures.
+
+    Derived here and set in markdown by build.py. Since the unit field was
+    removed these are the only place the record appears above the footer,
+    which is the argument for them: four numbers a reader can actually read,
+    where 2,774 marks they could not were.
+    """
     days = contrib.get("days") or []
     if not days:
         return []
@@ -313,9 +251,6 @@ def render(name: str, contributions: dict | None = None,
         f'y2="{NAME_RULE_Y:.0f}" stroke="{fg}" stroke-opacity=".22" stroke-width="1"/>\n'
         f'  <text class="name" x="{NAME_X:.0f}" y="{NAME_Y:.0f}">{name}</text>\n'
     )
-
-    if days:
-        parts.append(_unit_field(contrib, fg))
 
     parts.append('</svg>\n')
     return "".join(parts)
