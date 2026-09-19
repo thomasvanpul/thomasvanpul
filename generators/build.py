@@ -96,8 +96,18 @@ def _load_showrooms(token: str | None, data_dir: Path) -> dict[str, dict]:
     for name, cfg in content.SHOWROOMS.items():
         cache = data_dir / f"showroom-{_flow_id(name)}.json"
         grid = None
-        if token:
-            grid = showroom.ingest(cfg["url"], cfg["cols"], cfg.get("crop"))
+        local = cfg.get("path")
+        # A local source needs no token: the gate on `token` exists because the
+        # original showroom fetched from the network, and an offline build had
+        # to fall back to the cached grid. A committed still is always readable.
+        if local or token:
+            if local:
+                # A showroom whose source lives in this repo. Private repos
+                # cannot be fetched, so the still is committed here instead.
+                src = (REPO_ROOT / local).read_bytes() if (REPO_ROOT / local).exists() else None
+                grid = showroom.ingest("", cfg["cols"], cfg.get("crop"), source_bytes=src)
+            else:
+                grid = showroom.ingest(cfg["url"], cfg["cols"], cfg.get("crop"))
         if grid is None:
             grid = showroom.read_cache(cache)
         if grid is not None:
@@ -249,7 +259,9 @@ def _render_svgs_in_memory(data: dict) -> dict[str, dict[str, str]]:
 
     featured_names = {e["name"] for e in data["featured"]}
     for name, grid in (data.get("showrooms") or {}).items():
-        if name not in featured_names:
+        # Atrium is its own section rather than a featured repo, so it is not in
+        # featured_names and would be skipped. Its showroom is still wanted.
+        if name not in featured_names and name != "atrium":
             continue
         variants[f"showroom-{_flow_id(name)}"] = {
             theme: halftone.render(theme, grid, content.SHOWROOMS[name]["aria"])
@@ -385,8 +397,13 @@ def _atrium_card(filenames: dict[str, dict[str, str]], data: dict) -> str:
     and is not optional — see Atlas/Projects/Atrium/Verified-Record.md.
     """
     a = content.ATRIUM
+    show_dark, show_light = _url_pair(data, filenames, "showroom-atrium")
     dark, light = _url_pair(data, filenames, "atrium-figures")
-    lines = [f"### {a['heading']}\n", _picture(dark, light, a["figures_aria"]) + "\n"]
+    cfg = content.SHOWROOMS.get("atrium", {})
+    lines = [f"### {a['heading']}\n", '<div align="center">\n',
+             _picture(show_dark, show_light, cfg.get("aria", "")),
+             f'\n<sub>{cfg.get("caption", "")}</sub>\n', "</div>\n",
+             _picture(dark, light, a["figures_aria"]) + "\n"]
     lines.extend(para + "\n" for para in a["body"])
     lines.append(a["repo_line"] + "\n")
     return "\n".join(lines)

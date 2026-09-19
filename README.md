@@ -54,6 +54,18 @@ Repo: [`Finance-Tracker`](https://github.com/thomasvanpul/Finance-Tracker)
 
 ### Atrium
 
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/showroom-atrium.c671735-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/showroom-atrium.88c34e1-light.svg">
+  <img alt="The Atrium lattice at ten times magnification, drawn as a halftone dot screen: thousands of small marks, each one a real commit, file change or test run" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/showroom-atrium.c671735-dark.svg">
+</picture>
+
+<sub>A real frame of the lattice at 10x. Every mark is an event from one of 31 repositories; density is what the region has been doing.</sub>
+
+</div>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/atrium-figures.b534726-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/atrium-figures.9ae56ae-light.svg">

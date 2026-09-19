@@ -136,6 +136,21 @@ FOOTER_LINKS = (
 # images belong here — see .review/report.md for why the other two candidate
 # showrooms are not automatable.
 SHOWROOMS = {
+    # Atrium's repo is private, so its render cannot be fetched the way
+    # BlueBand's is. The still is committed to this repo instead and read from
+    # disk — the same treatment, a different source. It is a real frame of the
+    # lattice at 10x: 218,016 events from 31 repositories, every mark an event.
+    "atrium": {
+        "path": "showroom/atrium-lattice.png",
+        "crop": (0.0, 0.10, 1.0, 0.92),
+        "cols": 132,
+        "aria": "The Atrium lattice at ten times magnification, drawn as a "
+                "halftone dot screen: thousands of small marks, each one a real "
+                "commit, file change or test run",
+        "caption": "A real frame of the lattice at 10x. Every mark is an event "
+                   "from one of 31 repositories; density is what the region has "
+                   "been doing.",
+    },
     "blueband-concept": {
         "url": "https://raw.githubusercontent.com/thomasvanpul/blueband-concept"
                "/main/renders/01_three_quarter_with_band.png",
