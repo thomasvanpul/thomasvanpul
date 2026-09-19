@@ -111,16 +111,6 @@ Private repo. Figures measured 2026-09-16.
 <div align="center">
 
 <picture>
-<<<<<<< HEAD
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/stats.dc2eeda-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/stats.663dfe1-light.svg">
-  <img alt="Contributions in the last 12 months" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/stats.dc2eeda-dark.svg">
-</picture>
-
-
-<picture>
-=======
->>>>>>> 742c92b (automatic snapshot 2026-09-19)
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/output/github-contribution-grid-snake-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/output/github-contribution-grid-snake.svg">
   <img alt="contribution snake" src="https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/output/github-contribution-grid-snake-dark.svg">
