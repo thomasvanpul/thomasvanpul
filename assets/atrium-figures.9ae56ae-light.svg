@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 132" width="1200" height="132" role="img" aria-label="Atrium, measured: 18,470 lines of Swift across 75 files; 418 assertions covering 38% of the codebase; 218,016 real events from 31 repositories; 10 MB resident at 0% idle CPU.">
+  <text x="70" y="62" style="font:600 54px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:2px" fill="#0d1117" fill-opacity=".95">18,470</text>
+  <text x="73" y="82" style="font:400 10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:2.4px" fill="#0d1117" fill-opacity=".55">LINES OF SWIFT, 75 FILES</text>
+  <text x="580.0" y="58" text-anchor="middle" style="font:600 22px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".88">418</text>
+  <text x="580.0" y="78" text-anchor="middle" style="font:400 9px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.3px" fill="#0d1117" fill-opacity=".50">ASSERTIONS · 38% OF CODE</text>
+  <text x="800.0" y="58" text-anchor="middle" style="font:600 22px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".88">218,016</text>
+  <text x="800.0" y="78" text-anchor="middle" style="font:400 9px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.3px" fill="#0d1117" fill-opacity=".50">EVENTS · 31 REPOS</text>
+  <text x="1020.0" y="58" text-anchor="middle" style="font:600 22px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.4px" fill="#0d1117" fill-opacity=".88">10 MB</text>
+  <text x="1020.0" y="78" text-anchor="middle" style="font:400 9px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:1.3px" fill="#0d1117" fill-opacity=".50">RESIDENT · 0% IDLE CPU</text>
+  <line x1="70" y1="104" x2="1130" y2="104" stroke="#0d1117" stroke-opacity=".16" stroke-width="1"/>
+</svg>

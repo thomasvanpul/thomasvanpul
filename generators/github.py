@@ -240,8 +240,46 @@ def fetch_contributions(token: str, owner: str = "thomasvanpul") -> dict:
     data = _graphql(token, _CONTRIB_QUERY, {"login": owner})
     cc = data["user"]["contributionsCollection"]
     days = _flatten_days(cc["contributionCalendar"])
+    return summarise(cc["contributionCalendar"]["totalContributions"], days)
+
+
+def monthly_totals(days: list[dict]) -> list[list]:
+    """Return [[YYYY-MM, total], ...] in chronological order.
+
+    Built by walking `days` in order rather than with a dict-then-sort, so the
+    output order is the calendar's own order and cannot depend on dict
+    iteration. The hero maps the tail of this list onto its rings.
+    """
+    out: list[list] = []
+    for day in days:
+        key = day["date"][:7]
+        if out and out[-1][0] == key:
+            out[-1][1] += day["count"]
+        else:
+            out.append([key, day["count"]])
+    return out
+
+
+def summarise(total: int, days: list[dict]) -> dict:
+    """Build the contributions payload the SVG layer consumes.
+
+    Kept separate from `fetch_contributions` so the cached path in build.py
+    can rebuild the derived figures from a stored day series without a
+    network call, and so the derivation is testable without mocking HTTP.
+
+    `days` is carried through in full: the hero plots one mark per day, and a
+    summary statistic cannot be un-summarised back into 370 marks.
+    """
+    active = [d for d in days if d["count"] > 0]
+    peak = max(days, key=lambda d: d["count"]) if days else None
     return {
-        "total": cc["contributionCalendar"]["totalContributions"],
+        "total": total,
         "current_streak": current_streak(days),
         "longest_streak": longest_streak(days),
+        "days": days,
+        "months": monthly_totals(days),
+        "active_days": len(active),
+        "peak_date": peak["date"] if peak else None,
+        "peak_count": peak["count"] if peak else 0,
+        "first_active": active[0]["date"] if active else None,
     }

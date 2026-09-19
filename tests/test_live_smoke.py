@@ -47,7 +47,12 @@ def test_live_contributions_query_works_with_installation_token():
     """
     token = os.environ["GITHUB_TOKEN"]
     stats = gh.fetch_contributions(token, "thomasvanpul")
-    assert set(stats.keys()) == {"total", "current_streak", "longest_streak"}
+    assert {"total", "current_streak", "longest_streak", "days", "months"} <= set(stats)
+    # The hero plots one mark per contribution and shades by month, so the day
+    # series and the monthly roll-up must survive the fetch, not just the
+    # summary figures. A regression to summary-only would render an empty hero.
+    assert stats["days"], "contribution day series came back empty"
+    assert sum(c for _m, c in stats["months"]) == sum(d["count"] for d in stats["days"])
     assert isinstance(stats["total"], int)
     assert stats["total"] >= 0
     assert isinstance(stats["current_streak"], int)

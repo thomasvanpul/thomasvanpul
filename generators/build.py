@@ -24,7 +24,8 @@ from pathlib import Path
 
 from . import content
 from . import github as gh
-from .svg import THEMES, flow, hero, orbit, rule, stats
+from . import showroom
+from .svg import THEMES, figures, flow, halftone, hero, orbit
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_REPOS_FIXTURE = REPO_ROOT / "data" / "repos.sample.json"
@@ -50,7 +51,62 @@ def _flow_id(repo_name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", repo_name.lower()).strip("-")
 
 
-def _load_data(token: str | None, fixture_path: Path, orbit_path: Path) -> dict:
+def _read_contrib_cache(cache_path: Path) -> dict | None:
+    """Rebuild the contributions payload from the committed day series.
+
+    Returns None when the cache is missing or unreadable — the caller then
+    builds without a contributions panel, which is what happened on every
+    tokenless build before this cache existed.
+    """
+    if not cache_path.exists():
+        return None
+    try:
+        raw = json.loads(cache_path.read_text(encoding="utf-8"))
+        return gh.summarise(raw["total"], raw["days"])
+    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        print(f"warning: ignoring unreadable {cache_path.name}: {e}", file=sys.stderr)
+        return None
+
+
+def _write_contrib_cache(cache_path: Path, contributions: dict) -> None:
+    """Store only the two irreducible fields; everything else is derived.
+
+    Storing the derived figures too would let the cache disagree with itself
+    if `summarise` ever changes, and a cache that can lie is worse than no
+    cache.
+    """
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    cache_path.write_text(
+        json.dumps({"total": contributions["total"], "days": contributions["days"]},
+                   indent=1) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _load_showrooms(token: str | None, data_dir: Path) -> dict[str, dict]:
+    """Load one luminance grid per configured showroom.
+
+    Same rule as the contributions cache: a token-bearing build re-ingests
+    from source and rewrites the cache, a tokenless one replays what is
+    committed. The token is not needed to *reach* the images — they are
+    public — it is used as the signal for "this is the authoritative build",
+    so a local preview never silently produces a page CI would not.
+    """
+    grids: dict[str, dict] = {}
+    for name, cfg in content.SHOWROOMS.items():
+        cache = data_dir / f"showroom-{_flow_id(name)}.json"
+        grid = None
+        if token:
+            grid = showroom.ingest(cfg["url"], cfg["cols"], cfg.get("crop"))
+        if grid is None:
+            grid = showroom.read_cache(cache)
+        if grid is not None:
+            grids[name] = grid
+    return grids
+
+
+def _load_data(token: str | None, fixture_path: Path, orbit_path: Path,
+               cache_path: Path) -> dict:
     """Load the unified data dict. Raises BuildError on any failure.
 
     Both repo discovery and the contributions GraphQL call now run against
@@ -60,9 +116,14 @@ def _load_data(token: str | None, fixture_path: Path, orbit_path: Path) -> dict:
     token. This is why the previous PROFILE_STATS_TOKEN split is gone.
 
     If token is absent (local `make preview` without an exported token) the
-    build loads the fixture and skips the contributions panel — the panel
-    can't be built without a real API call, and the fixture path is only
-    for offline layout previews.
+    build loads the repo fixture and replays the contributions day series
+    from data/contributions.json, which the last tokened build committed.
+
+    That cache is the reason `make build` now reproduces the committed page
+    offline. Before it existed, a tokenless build silently dropped the
+    contributions panel and rewrote README.md without it, so every local
+    session — and the Stop-hook gate, which runs without a token — left the
+    tree dirty with a page that did not match what CI publishes.
     """
     orbit_cfg = json.loads(orbit_path.read_text(encoding="utf-8"))
 
@@ -91,13 +152,17 @@ def _load_data(token: str | None, fixture_path: Path, orbit_path: Path) -> dict:
             "contributions": contributions,
         }
     else:
-        print("no GITHUB_TOKEN, loading fixture (contributions panel skipped)",
+        cached = _read_contrib_cache(cache_path)
+        print("no GITHUB_TOKEN, loading fixture (contributions from cache)"
+              if cached else
+              "no GITHUB_TOKEN and no contributions cache (panel skipped)",
               file=sys.stderr)
         data = json.loads(fixture_path.read_text(encoding="utf-8"))
         data["orbit"] = orbit_cfg
-        data["contributions"] = None
+        data["contributions"] = cached
 
     data["featured"] = _sort_featured(data["featured"])
+    data["showrooms"] = _load_showrooms(token, cache_path.parent)
     return data
 
 
@@ -167,16 +232,29 @@ def _render_svgs_in_memory(data: dict) -> dict[str, dict[str, str]]:
     variants: dict[str, dict[str, str]] = {}
 
     variants["hero"] = {
-        theme: hero.render(theme, content.HERO_NAME, content.HERO_SUBTITLES)
+        theme: hero.render(theme, content.HERO_NAME, content.HERO_SUBTITLES,
+                           data.get("contributions"))
         for theme in THEMES
     }
-    variants["rule"] = {theme: rule.render(theme) for theme in THEMES}
     variants["orbit"] = {
         theme: orbit.render(theme, data["orbit"]["rings"]) for theme in THEMES
     }
-    contrib = data.get("contributions")
-    if contrib is not None:
-        variants["stats"] = {theme: stats.render(theme, contrib) for theme in THEMES}
+    variants["atrium-figures"] = {
+        theme: figures.render(theme, content.ATRIUM["lede_number"],
+                              content.ATRIUM["lede_caption"],
+                              content.ATRIUM["figures"],
+                              content.ATRIUM["figures_aria"])
+        for theme in THEMES
+    }
+
+    featured_names = {e["name"] for e in data["featured"]}
+    for name, grid in (data.get("showrooms") or {}).items():
+        if name not in featured_names:
+            continue
+        variants[f"showroom-{_flow_id(name)}"] = {
+            theme: halftone.render(theme, grid, content.SHOWROOMS[name]["aria"])
+            for theme in THEMES
+        }
 
     for entry in data["featured"]:
         cfg = entry.get("profile_config") or {}
@@ -214,98 +292,146 @@ def _hash_variants(variants: dict[str, dict[str, str]]) -> dict[str, dict[str, s
     return out
 
 
-def _plain_card(entry: dict) -> str:
-    """Fallback card for a featured repo without a flow diagram."""
+def _body_paragraphs(entry: dict) -> tuple[str, list[str], str]:
+    """Return (heading, paragraphs, repo_line) for a featured repo."""
     prose = content.FEATURED.get(entry["name"])
     heading = prose["heading"] if prose else entry["name"]
     body = prose["body"] if prose else (entry.get("description") or "").strip()
-    lines = [f"### {heading}\n"]
-    if isinstance(body, list):
-        for para in body:
-            lines.append(para + "\n")
-    elif body:
-        lines.append(body + "\n")
+    paras = list(body) if isinstance(body, list) else ([body] if body else [])
     repo_line = f'Repo: [`{entry["name"]}`]({entry["url"]})'
     if prose and prose.get("repo_suffix"):
         repo_line += f' &nbsp;·&nbsp; {prose["repo_suffix"]}'
+    return heading, paras, repo_line
+
+
+def _flow_picture(entry: dict, filenames: dict[str, dict[str, str]], data: dict) -> str | None:
+    cfg = entry.get("profile_config") or {}
+    if cfg.get("diagram") != "flow" or not cfg.get("stages"):
+        return None
+    basename = f"flow-{_flow_id(entry['name'])}"
+    if basename not in filenames:
+        return None
+    prose = content.FEATURED.get(entry["name"])
+    stages = cfg["stages"]
+    alt = prose["flow_aria"] if prose else (
+        f"{entry['name']} flow: " + " to ".join(st[0] for st in stages))
+    dark, light = _url_pair(data, filenames, basename)
+    return _picture(dark, light, alt)
+
+
+def _url_pair(data: dict, filenames: dict[str, dict[str, str]], basename: str) -> tuple[str, str]:
+    f = filenames[basename]
+    return (
+        _raw_url(data["owner"], data["repo"], data["branch"], f["dark"]),
+        _raw_url(data["owner"], data["repo"], data["branch"], f["light"]),
+    )
+
+
+def _showroom_card(entry: dict, filenames: dict[str, dict[str, str]], data: dict) -> str:
+    """Shape one: the object first.
+
+    A repo whose whole point is a physical thing should show the thing before
+    it explains itself. The render carries more than the first paragraph does,
+    so it goes above the fold of the section and the prose follows it.
+    """
+    heading, paras, repo_line = _body_paragraphs(entry)
+    cfg = content.SHOWROOMS[entry["name"]]
+    dark, light = _url_pair(data, filenames, f"showroom-{_flow_id(entry['name'])}")
+    lines = [f"### {heading}\n", '<div align="center">\n',
+             _picture(dark, light, cfg["aria"]),
+             f'\n<sub>{cfg["caption"]}</sub>\n', "</div>\n"]
+    lines.extend(para + "\n" for para in paras)
+    flow = _flow_picture(entry, filenames, data)
+    if flow:
+        lines.append(flow + "\n")
     lines.append(repo_line + "\n")
     return "\n".join(lines)
 
 
-def _flow_card(entry: dict, filenames: dict[str, dict[str, str]], data: dict) -> str:
-    prose = content.FEATURED.get(entry["name"])
-    heading = prose["heading"] if prose else entry["name"]
-    body = prose["body"] if prose else (entry.get("description") or "").strip()
-    basename = f"flow-{_flow_id(entry['name'])}"
-    dark = _raw_url(data["owner"], data["repo"], data["branch"], filenames[basename]["dark"])
-    light = _raw_url(data["owner"], data["repo"], data["branch"], filenames[basename]["light"])
+def _prose_card(entry: dict, filenames: dict[str, dict[str, str]], data: dict) -> str:
+    """Shape two: the argument first, the diagram as evidence.
 
-    stages = entry["profile_config"]["stages"]
-    default_alt = f"{entry['name']} flow: " + " to ".join(s[0] for s in stages)
-    alt = prose["flow_aria"] if prose else default_alt
-
+    Numeris is interesting because of what daily use did to it, and that is a
+    claim in words. The flow diagram is the supporting exhibit, so it sits
+    between the claim and the consequence rather than at the top.
+    """
+    heading, paras, repo_line = _body_paragraphs(entry)
     lines = [f"### {heading}\n"]
-    if isinstance(body, list):
-        lines.append(body[0] + "\n")
-    elif body:
-        lines.append(body + "\n")
-    lines.append(_picture(dark, light, alt) + "\n")
-    if isinstance(body, list) and len(body) > 1:
-        for extra in body[1:]:
-            lines.append(extra + "\n")
-    repo_line = f'Repo: [`{entry["name"]}`]({entry["url"]})'
-    if prose and prose.get("repo_suffix"):
-        repo_line += f' &nbsp;·&nbsp; {prose["repo_suffix"]}'
+    if paras:
+        lines.append(paras[0] + "\n")
+    flow = _flow_picture(entry, filenames, data)
+    if flow:
+        lines.append(flow + "\n")
+    lines.extend(para + "\n" for para in paras[1:])
     lines.append(repo_line + "\n")
+    return "\n".join(lines)
+
+
+def _plain_card(entry: dict) -> str:
+    """Fallback for a featured repo with neither a showroom nor a diagram."""
+    heading, paras, repo_line = _body_paragraphs(entry)
+    lines = [f"### {heading}\n"]
+    lines.extend(para + "\n" for para in paras)
+    lines.append(repo_line + "\n")
+    return "\n".join(lines)
+
+
+def _atrium_card(filenames: dict[str, dict[str, str]], data: dict) -> str:
+    """Shape three: the measurement first.
+
+    Atrium has no public repo to link and no diagram worth drawing at this
+    size. What it has is figures, so the section opens with them and the prose
+    explains what they are. The third paragraph is the honest-state paragraph
+    and is not optional — see Atlas/Projects/Atrium/Verified-Record.md.
+    """
+    a = content.ATRIUM
+    dark, light = _url_pair(data, filenames, "atrium-figures")
+    lines = [f"### {a['heading']}\n", _picture(dark, light, a["figures_aria"]) + "\n"]
+    lines.extend(para + "\n" for para in a["body"])
+    lines.append(a["repo_line"] + "\n")
     return "\n".join(lines)
 
 
 def _render_readme(data: dict, filenames: dict[str, dict[str, str]]) -> str:
-    owner, repo, branch = data["owner"], data["repo"], data["branch"]
-
-    def url_pair(basename: str) -> tuple[str, str]:
-        f = filenames[basename]
-        return (
-            _raw_url(owner, repo, branch, f["dark"]),
-            _raw_url(owner, repo, branch, f["light"]),
-        )
-
-    hero_dark, hero_light = url_pair("hero")
-    rule_dark, rule_light = url_pair("rule")
-    orbit_dark, orbit_light = url_pair("orbit")
-    rule_block = _picture(rule_dark, rule_light, "")
+    hero_dark, hero_light = _url_pair(data, filenames, "hero")
+    orbit_dark, orbit_light = _url_pair(data, filenames, "orbit")
 
     lines: list[str] = []
     lines.append('<div align="center">\n')
     lines.append(_picture(hero_dark, hero_light, content.HERO_ARIA))
     lines.append("\n</div>\n")
     lines.append(content.INTRO + "\n")
-    lines.append(rule_block + "\n")
 
+    # Sections are separated by their own shape, not by a repeated ornament.
+    # The six rule.svg references that used to sit between them were one
+    # cached request, not six, but they were also the same mark six times
+    # carrying nothing — which is the objection that actually mattered.
     for entry in data["featured"]:
         cfg = entry.get("profile_config") or {}
-        if cfg.get("diagram") == "flow" and cfg.get("stages"):
-            lines.append(_flow_card(entry, filenames, data))
+        has_showroom = entry["name"] in (data.get("showrooms") or {})
+        if has_showroom and f"showroom-{_flow_id(entry['name'])}" in filenames:
+            lines.append(_showroom_card(entry, filenames, data))
+        elif cfg.get("diagram") == "flow" and cfg.get("stages"):
+            lines.append(_prose_card(entry, filenames, data))
         else:
             lines.append(_plain_card(entry))
-        lines.append(rule_block + "\n")
+        lines.append("---\n")
+
+    lines.append(_atrium_card(filenames, data))
+    lines.append("---\n")
 
     lines.append(f"### {content.ALSO_RUNNING_HEADING}\n")
     for title, prose in content.ALSO_RUNNING:
         lines.append(f"**{title}** &nbsp;·&nbsp; {prose}\n")
-    lines.append(rule_block + "\n")
+    lines.append("---\n")
 
     lines.append(f"### {content.STACK_HEADING}\n")
     lines.append('<div align="center">\n')
     lines.append(_picture(orbit_dark, orbit_light, content.STACK_ORBIT_ARIA))
     lines.append("\n</div>\n")
-    lines.append(rule_block + "\n")
+    lines.append("---\n")
 
     lines.append('<div align="center">\n')
-    if "stats" in filenames:
-        stats_dark, stats_light = url_pair("stats")
-        lines.append(_picture(stats_dark, stats_light, content.STATS_ARIA))
-        lines.append("\n")
     lines.append(_picture(content.SNAKE_DARK_URL, content.SNAKE_LIGHT_URL, content.SNAKE_ARIA))
     lines.append("\n")
     lines.append(f"<sub>{content.FOOTER_SUB}</sub>\n")
@@ -316,7 +442,16 @@ def _render_readme(data: dict, filenames: dict[str, dict[str, str]]) -> str:
 
 
 def _write_all(out_dir: Path, variants: dict[str, dict[str, str]],
-               filenames: dict[str, dict[str, str]], readme: str) -> tuple[list[Path], list[Path]]:
+               filenames: dict[str, dict[str, str]], readme: str,
+               contributions: dict | None = None,
+               cache_path: Path | None = None,
+               showrooms: dict[str, dict] | None = None) -> tuple[list[Path], list[Path]]:
+    if cache_path is not None:
+        if contributions is not None and contributions.get("days"):
+            _write_contrib_cache(cache_path, contributions)
+        for name, grid in (showrooms or {}).items():
+            showroom.write_cache(
+                cache_path.parent / f"showroom-{_flow_id(name)}.json", grid)
     assets_dir = out_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
     kept: set[Path] = set()
@@ -337,17 +472,24 @@ def _write_all(out_dir: Path, variants: dict[str, dict[str, str]],
 def build(fixture_path: Path = DEFAULT_REPOS_FIXTURE,
           orbit_path: Path = DEFAULT_ORBIT_CONFIG,
           out_dir: Path = DEFAULT_OUT,
-          token: str | None = None) -> list[Path]:
+          token: str | None = None,
+          cache_path: Path | None = None) -> list[Path]:
     if token is None:
         token = os.environ.get("GITHUB_TOKEN") or None
+    # Relative to out_dir, never to REPO_ROOT: a test building into tmp_path
+    # must not be able to rewrite the repo's own committed cache.
+    if cache_path is None:
+        cache_path = out_dir / "data" / "contributions.json"
 
-    data = _load_data(token, fixture_path, orbit_path)
+    data = _load_data(token, fixture_path, orbit_path, cache_path)
     _validate(data)
     variants = _render_svgs_in_memory(data)
     filenames = _hash_variants(variants)
     readme = _render_readme(data, filenames)
 
-    written, removed = _write_all(out_dir, variants, filenames, readme)
+    written, removed = _write_all(out_dir, variants, filenames, readme,
+                                  data.get("contributions"), cache_path,
+                                  data.get("showrooms"))
     for r in removed:
         print(f"removed  {r.relative_to(out_dir)}", file=sys.stderr)
     for w in written:

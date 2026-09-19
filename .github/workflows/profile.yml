@@ -36,7 +36,11 @@ jobs:
           python-version: "3.11"
 
       - name: Install build dependencies
-        run: pip install --upgrade pip PyYAML pytest
+        # Pillow is used only by generators/showroom.py, to reduce the
+          # BlueBand render to the luminance grid the halftone is drawn from.
+          # The build degrades to the committed grid without it, so this is a
+          # nice-to-have rather than a hard dependency.
+          run: pip install --upgrade pip PyYAML pytest Pillow
 
       - name: Run tests (unit + live API smoke)
         env:
@@ -66,11 +70,16 @@ jobs:
           set -euo pipefail
           git config user.name "profile-bot"
           git config user.email "profile-bot@users.noreply.github.com"
-          if [ -z "$(git status --porcelain README.md assets/)" ]; then
+          # data/ is in the list because the build now commits the caches it
+          # reads on a tokenless run: data/contributions.json and the showroom
+          # grids. Leaving them out would let the committed caches drift away
+          # from what CI last saw, and `make build` would stop reproducing the
+          # published page offline.
+          if [ -z "$(git status --porcelain README.md assets/ data/)" ]; then
             echo "no changes to commit"
             exit 0
           fi
-          git add README.md assets/
+          git add README.md assets/ data/
           git commit -m "chore(profile): rebuild from live GitHub data"
           # Never push anywhere except main. Snake owns `output`.
           git push origin main

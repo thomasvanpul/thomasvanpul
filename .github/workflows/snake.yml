@@ -14,9 +14,17 @@ jobs:
       - uses: Platane/snk/svg-only@v3
         with:
           github_user_name: ${{ github.repository_owner }}
+          # Restyled to the profile palette rather than left on GitHub's
+          # greens. color_dots takes exactly five colours: index 0 is a day
+          # with no contributions, then low to high. The ramps below end on
+          # the same foreground the generated SVGs use (#e6edf3 dark,
+          # #0d1117 light), so the snake is the only element on the page not
+          # generated here and still the same colour as everything that is.
+          # Filenames are unchanged — the query string is not part of them —
+          # so generators/content.py needs no edit.
           outputs: |
-            dist/github-contribution-grid-snake.svg
-            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+            dist/github-contribution-grid-snake.svg?color_snake=#0d1117&color_dots=#eaeef2,#c9d1d9,#8c959f,#424a53,#0d1117
+            dist/github-contribution-grid-snake-dark.svg?color_snake=#e6edf3&color_dots=#161b22,#30363d,#6e7681,#b1bac4,#e6edf3
 
       - uses: crazy-max/ghaction-github-pages@v3.1.0
         with:

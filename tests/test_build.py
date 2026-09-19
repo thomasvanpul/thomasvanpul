@@ -182,3 +182,107 @@ def test_missing_profile_yml_falls_back_to_plain_card(tmp_path):
     assert "A repo with no diagram config." in readme
     # No flow SVG should have been emitted for the plain repo.
     assert not any(p.name.startswith("flow-plain-repo") for p in (out_dir / "assets").iterdir())
+
+
+def _contrib(days_spec: list[tuple[str, int]]) -> dict:
+    return gh.summarise(sum(c for _d, c in days_spec),
+                        [{"date": d, "count": c} for d, c in days_spec])
+
+
+def test_every_generated_svg_is_well_formed_xml(tmp_path):
+    """The build happily wrote invalid XML once and the gate passed anyway.
+
+    A double-quoted font family inside a style="..." attribute closed the
+    attribute early. `python3 -m generators.build` cannot see that; only a
+    parser can. Parse every asset the build emits, for both themes.
+    """
+    import xml.etree.ElementTree as ET
+
+    out_dir = tmp_path
+    (out_dir / "assets").mkdir()
+    orbit = _write_orbit(tmp_path)
+    fixture = tmp_path / "unused.json"
+
+    api_repo = {
+        "name": "some-repo", "html_url": "https://github.com/thomasvanpul/some-repo",
+        "default_branch": "main", "description": "desc", "language": "Python",
+        "topics": ["profile-feature"], "pushed_at": "2026-08-01T00:00:00Z",
+        "archived": False, "fork": False,
+    }
+    contribs = _contrib([("2026-07-%02d" % i, i) for i in range(1, 29)])
+
+    with patch.object(gh, "fetch_featured_repos", return_value=[api_repo]), \
+         patch.object(gh, "fetch_profile_config", return_value=None), \
+         patch.object(gh, "fetch_contributions", return_value=contribs):
+        build.build(fixture_path=fixture, orbit_path=orbit, out_dir=out_dir,
+                    token="fake-token")
+
+    written = sorted((out_dir / "assets").glob("*.svg"))
+    assert written, "build emitted no SVGs to check"
+    for path in written:
+        try:
+            ET.fromstring(path.read_text(encoding="utf-8"))
+        except ET.ParseError as e:
+            raise AssertionError(f"{path.name} is not well-formed XML: {e}") from e
+
+
+def test_hero_draws_one_mark_per_contribution():
+    """The field's premise is one mark per contribution. Count them."""
+    from generators.svg import hero
+
+    spec = [("2026-07-%02d" % i, 3) for i in range(1, 11)] + \
+           [("2026-08-%02d" % i, 5) for i in range(1, 11)]
+    contrib = _contrib(spec)
+    svg = hero.render("dark", "NAME", ["SUB"], contrib)
+    # Each mark is one "h.01" segment; nothing else in the hero emits one.
+    assert svg.count("h.01") == contrib["total"] == 80
+
+
+def test_tokenless_build_reproduces_the_tokened_one(tmp_path, monkeypatch):
+    """The contributions cache exists so `make build` is offline-reproducible.
+
+    Before it, a build with no token silently dropped the contributions data
+    and rewrote README.md without it, so every local run and every Stop-hook
+    gate left the tree dirty against what CI publishes.
+    """
+    # build(token=None) means "read GITHUB_TOKEN from the environment", so
+    # without this the second build picks up a real token when one is
+    # exported and quietly goes to the network instead of to the cache.
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+
+    orbit = _write_orbit(tmp_path)
+    fixture = tmp_path / "fixture.json"
+    fixture.write_text(json.dumps({
+        "owner": "thomasvanpul", "repo": "thomasvanpul", "branch": "main",
+        "featured": [{
+            "name": "some-repo", "description": "desc", "language": "Python",
+            "topics": ["profile-feature"],
+            "url": "https://github.com/thomasvanpul/some-repo",
+            "default_branch": "main", "pushed_at": "2026-08-01T00:00:00Z",
+            "profile_config": {},
+        }],
+    }), encoding="utf-8")
+
+    api_repo = {
+        "name": "some-repo", "html_url": "https://github.com/thomasvanpul/some-repo",
+        "default_branch": "main", "description": "desc", "language": "Python",
+        "topics": ["profile-feature"], "pushed_at": "2026-08-01T00:00:00Z",
+        "archived": False, "fork": False,
+    }
+    contribs = _contrib([("2026-07-%02d" % i, i) for i in range(1, 29)])
+
+    live = tmp_path / "live"
+    (live / "assets").mkdir(parents=True)
+    with patch.object(gh, "fetch_featured_repos", return_value=[api_repo]), \
+         patch.object(gh, "fetch_profile_config", return_value=None), \
+         patch.object(gh, "fetch_contributions", return_value=contribs):
+        build.build(fixture_path=fixture, orbit_path=orbit, out_dir=live,
+                    token="fake-token")
+    tokened = (live / "README.md").read_text(encoding="utf-8")
+    # The numbers live in the hero asset, not in the README that references it.
+    hero_svg = next((live / "assets").glob("hero.*-dark.svg")).read_text(encoding="utf-8")
+    assert "CONTRIBUTIONS" in hero_svg and "h.01" in hero_svg
+
+    # Second build, no token, reading the cache the first one committed.
+    build.build(fixture_path=fixture, orbit_path=orbit, out_dir=live, token=None)
+    assert (live / "README.md").read_text(encoding="utf-8") == tokened
