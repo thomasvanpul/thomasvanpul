@@ -25,7 +25,10 @@ from pathlib import Path
 from . import content
 from . import github as gh
 from . import showroom
-from .svg import THEMES, figures, flow, halftone, hero, orbit
+# `orbit` is deliberately not imported: the orbit plate is cut (see
+# content.STACK_LINE for why). data/orbit.json is still loaded below so
+# reinstating it is this import, one render line and one README line.
+from .svg import figures, flow, halftone, hero
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_REPOS_FIXTURE = REPO_ROOT / "data" / "repos.sample.json"
@@ -217,45 +220,126 @@ def _repo_from_api(api_repo: dict, token: str) -> dict:
     }
 
 
+def _wants_flow(name: str) -> bool:
+    """A repo can decline its diagram even when its .profile.yml asks for one.
+
+    Numeris does. Its flow drew BANK to INGEST to POSTGRES to API to UI, which
+    is the sentence directly above it with boxes around it -- a plate that
+    costs page height and adds no claim. BlueBand keeps its diagram because
+    "one person doing the whole chain" is something the diagram proves and the
+    sentence only asserts. The opt-out lives here rather than in the repo's
+    own .profile.yml because it is a judgement about this page, not about that
+    repo.
+    """
+    prose = content.FEATURED.get(name) or {}
+    return prose.get("flow", True)
+
+
 def _validate(data: dict) -> None:
     featured = data.get("featured") or []
     if not featured:
         raise BuildError("no featured repos (topic 'profile-feature' matched 0 repos)")
 
 
+def _table(rows: list[tuple[str, str]], head: tuple[str, str] | None = None) -> str:
+    """A two-column GFM table.
+
+    Markdown gives a README headings, paragraphs, lists, tables and code, and
+    that is the whole toolbox. A table is the one structure in it that sets a
+    column of measured values without the result reading as a paragraph of
+    numbers, which is what the Atrium section and the stack line both were.
+    An omitted head leaves the header cells empty, which GitHub renders as a
+    rule above the first row -- a separator this page otherwise has none of.
+    """
+    left, right = head or ("", "")
+    lines = [f"| {left} | {right} |", "| --- | --- |"]
+    lines += [f"| {a} | {b} |" for a, b in rows]
+    return "\n".join(lines)
+
+
 def _raw_url(owner: str, repo: str, branch: str, asset: str) -> str:
     return f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/assets/{asset}"
 
 
-def _picture(dark_url: str, light_url: str, alt: str) -> str:
+def _img(url: str, alt: str) -> str:
+    """One source, not two.
+
+    Every asset now carries Atrium's field with it, so there is nothing left
+    for a `prefers-color-scheme` switch to switch: the two variants rendered
+    byte-identical bodies. What used to be a `<picture>` with two `<source>`
+    elements and a fallback is a single `<img>`, which is also seven fewer
+    files in `assets/` and one request instead of a source set.
+    """
+    return f'<img alt="{alt}" src="{url}">'
+
+
+def _hero_picture(url: str, still_url: str) -> str:
+    """The second place on this page that needs two sources, and why.
+
+    An `<img>`-referenced SVG is told the reader's colour scheme and is not
+    told the reader's motion preference: the same file under an emulated
+    `prefers-reduced-motion: reduce` matches the rule when it is opened as a
+    document and never matches it when it is loaded through an `<img>`,
+    measured in Chromium both ways. A `@media (prefers-reduced-motion)` block
+    inside the asset is therefore dead code wearing the shape of a guarantee.
+
+    The host page does evaluate the query, because a `<source media>` is the
+    page's own CSS, so the choice is made out here: reduce gets the still, and
+    everything else falls through to the animated file. Same mechanism as the
+    snake below, different query.
+
+    The honest limit: this depends on GitHub passing `<source media>` through
+    its sanitiser for a query other than `prefers-color-scheme`. If it strips
+    it, the fallback is the animated hero -- no worse than shipping one file,
+    and the preference is respected everywhere the source survives.
+    """
     return (
         "<picture>\n"
-        f'  <source media="(prefers-color-scheme: dark)" srcset="{dark_url}">\n'
-        f'  <source media="(prefers-color-scheme: light)" srcset="{light_url}">\n'
-        f'  <img alt="{alt}" src="{dark_url}">\n'
+        f'  <source media="(prefers-reduced-motion: reduce)" srcset="{still_url}">\n'
+        f'  <img alt="{content.HERO_ARIA}" src="{url}">\n'
         "</picture>"
     )
 
 
-def _render_svgs_in_memory(data: dict) -> dict[str, dict[str, str]]:
-    """Return {basename: {theme: svg_body}}. Pure function, no disk writes."""
-    variants: dict[str, dict[str, str]] = {}
+def _snake_picture() -> str:
+    """The one element on the page that still needs two sources, and why.
 
-    variants["hero"] = {
-        theme: hero.render(theme, content.HERO_NAME, content.HERO_SUBTITLES,
-                           data.get("contributions"))
-        for theme in THEMES
-    }
-    variants["orbit"] = {
-        theme: orbit.render(theme, data["orbit"]["rings"]) for theme in THEMES
-    }
-    variants["atrium-figures"] = {
-        theme: figures.render(theme, content.ATRIUM["lede_number"],
-                              content.ATRIUM["lede_caption"],
-                              content.ATRIUM["figures"],
-                              content.ATRIUM["figures_aria"])
-        for theme in THEMES
-    }
+    Every SVG this repo generates carries Atrium's field inside it, so it
+    looks the same whatever theme the reader is in. The snake does not: it is
+    built by Platane/snk on the `output` branch, its background is
+    transparent, and `snk` takes no background parameter — the only colours it
+    accepts are the five dot steps and the snake itself. An asset that cannot
+    paint its own ground has to adapt to the ground it is given, so this is
+    the one place a `prefers-color-scheme` switch still earns its keep.
+
+    The two files are not the same ramp inverted for looks. Dark runs
+    density-0 to density-4 and light runs it backwards, so in both themes a
+    busier day sits further from the page behind it. See
+    `.github/workflows/snake.yml`.
+    """
+    return (
+        "<picture>\n"
+        f'  <source media="(prefers-color-scheme: dark)" srcset="{content.SNAKE_DARK_URL}">\n'
+        f'  <source media="(prefers-color-scheme: light)" srcset="{content.SNAKE_LIGHT_URL}">\n'
+        f'  <img alt="{content.SNAKE_ARIA}" src="{content.SNAKE_DARK_URL}">\n'
+        "</picture>"
+    )
+
+
+def _render_svgs_in_memory(data: dict) -> dict[str, str]:
+    """Return {basename: svg_body}. Pure function, no disk writes."""
+    variants: dict[str, str] = {}
+
+    layout = content.LAYOUT[content.DOMINANT]
+
+    variants["hero"] = hero.render(content.HERO_NAME, data.get("contributions"))
+    # The same figure with the pip parked. See `_hero_picture` for why the
+    # page and not the asset is where motion is turned off.
+    variants["hero-still"] = hero.render(content.HERO_NAME,
+                                         data.get("contributions"), animate=False)
+    variants["atrium-figures"] = figures.render(
+        content.ATRIUM["lede_number"], content.ATRIUM["lede_caption"],
+        content.ATRIUM["figures_aria"], view_w=layout["figures_w"])
 
     featured_names = {e["name"] for e in data["featured"]}
     for name, grid in (data.get("showrooms") or {}).items():
@@ -263,15 +347,14 @@ def _render_svgs_in_memory(data: dict) -> dict[str, dict[str, str]]:
         # featured_names and would be skipped. Its showroom is still wanted.
         if name not in featured_names and name != "atrium":
             continue
-        variants[f"showroom-{_flow_id(name)}"] = {
-            theme: halftone.render(theme, grid, content.SHOWROOMS[name]["aria"])
-            for theme in THEMES
-        }
+        variants[f"showroom-{_flow_id(name)}"] = halftone.render(
+            grid, content.SHOWROOMS[name]["aria"],
+            view_w=layout["showroom_w"][name])
 
     for entry in data["featured"]:
         cfg = entry.get("profile_config") or {}
         diagram = cfg.get("diagram", "none")
-        if diagram != "flow":
+        if diagram != "flow" or not _wants_flow(entry["name"]):
             continue
         stages_raw = cfg.get("stages") or []
         if len(stages_raw) < 2:
@@ -286,22 +369,20 @@ def _render_svgs_in_memory(data: dict) -> dict[str, dict[str, str]]:
         if si and len(si) >= 2:
             side_input = {"label": si[0], "sublabel": si[1], "connects_to": 1}
         basename = f"flow-{_flow_id(entry['name'])}"
-        variants[basename] = {
-            theme: flow.render(theme, stages, None, side_input) for theme in THEMES
-        }
+        prose = content.FEATURED.get(entry["name"]) or {}
+        variants[basename] = flow.render(stages, None, side_input,
+                                         aria=prose.get("flow_aria"))
 
     return variants
 
 
-def _hash_variants(variants: dict[str, dict[str, str]]) -> dict[str, dict[str, str]]:
-    """Turn {basename: {theme: body}} into {basename: {theme: filename}}."""
-    out: dict[str, dict[str, str]] = {}
-    for basename, per_theme in variants.items():
-        out[basename] = {}
-        for theme, body in per_theme.items():
-            digest = _sha7(body)
-            out[basename][theme] = f"{basename}.{digest}-{theme}.svg"
-    return out
+def _hash_variants(variants: dict[str, str]) -> dict[str, str]:
+    """Turn {basename: body} into {basename: filename}.
+
+    The filename no longer carries a theme suffix, because there is no longer
+    a theme. The content hash still does the cache-busting it always did.
+    """
+    return {basename: f"{basename}.{_sha7(body)}.svg" for basename, body in variants.items()}
 
 
 def _body_paragraphs(entry: dict) -> tuple[str, list[str], str]:
@@ -316,7 +397,7 @@ def _body_paragraphs(entry: dict) -> tuple[str, list[str], str]:
     return heading, paras, repo_line
 
 
-def _flow_picture(entry: dict, filenames: dict[str, dict[str, str]], data: dict) -> str | None:
+def _flow_picture(entry: dict, filenames: dict[str, str], data: dict) -> str | None:
     cfg = entry.get("profile_config") or {}
     if cfg.get("diagram") != "flow" or not cfg.get("stages"):
         return None
@@ -327,31 +408,27 @@ def _flow_picture(entry: dict, filenames: dict[str, dict[str, str]], data: dict)
     stages = cfg["stages"]
     alt = prose["flow_aria"] if prose else (
         f"{entry['name']} flow: " + " to ".join(st[0] for st in stages))
-    dark, light = _url_pair(data, filenames, basename)
-    return _picture(dark, light, alt)
+    return _img(_url(data, filenames, basename), alt)
 
 
-def _url_pair(data: dict, filenames: dict[str, dict[str, str]], basename: str) -> tuple[str, str]:
-    f = filenames[basename]
-    return (
-        _raw_url(data["owner"], data["repo"], data["branch"], f["dark"]),
-        _raw_url(data["owner"], data["repo"], data["branch"], f["light"]),
-    )
+def _url(data: dict, filenames: dict[str, str], basename: str) -> str:
+    return _raw_url(data["owner"], data["repo"], data["branch"], filenames[basename])
 
 
-def _showroom_card(entry: dict, filenames: dict[str, dict[str, str]], data: dict) -> str:
-    """Shape one: the object first.
+def _showroom_card(entry: dict, filenames: dict[str, str], data: dict) -> str:
+    """The object first.
 
-    A repo whose whole point is a physical thing should show the thing before
-    it explains itself. The render carries more than the first paragraph does,
-    so it goes above the fold of the section and the prose follows it.
+    A repo whose whole point is a physical thing shows the thing before it
+    explains itself. Whether that thing gets the full column or two thirds of
+    it is `content.DOMINANT` -- one section on this page is allowed to
+    dominate and the rest are not, which is the whole of the hierarchy.
     """
     heading, paras, repo_line = _body_paragraphs(entry)
     cfg = content.SHOWROOMS[entry["name"]]
-    dark, light = _url_pair(data, filenames, f"showroom-{_flow_id(entry['name'])}")
-    lines = [f"### {heading}\n", '<div align="center">\n',
-             _picture(dark, light, cfg["aria"]),
-             f'\n<sub>{cfg["caption"]}</sub>\n', "</div>\n"]
+    url = _url(data, filenames, f"showroom-{_flow_id(entry['name'])}")
+    lines = [f"### {heading}\n",
+             _img(url, cfg["aria"]) + "\n",
+             f'<sub>{cfg["caption"]}</sub>\n']
     lines.extend(para + "\n" for para in paras)
     flow = _flow_picture(entry, filenames, data)
     if flow:
@@ -360,12 +437,13 @@ def _showroom_card(entry: dict, filenames: dict[str, dict[str, str]], data: dict
     return "\n".join(lines)
 
 
-def _prose_card(entry: dict, filenames: dict[str, dict[str, str]], data: dict) -> str:
-    """Shape two: the argument first, the diagram as evidence.
+def _prose_card(entry: dict, filenames: dict[str, str], data: dict) -> str:
+    """The argument, with no plate at all.
 
     Numeris is interesting because of what daily use did to it, and that is a
-    claim in words. The flow diagram is the supporting exhibit, so it sits
-    between the claim and the consequence rather than at the top.
+    claim in words. It used to carry a flow diagram between the claim and the
+    consequence; see `_wants_flow` for why it no longer does. Three sections
+    with a plate each and one without is part of the rhythm, not an omission.
     """
     heading, paras, repo_line = _body_paragraphs(entry)
     lines = [f"### {heading}\n"]
@@ -388,68 +466,128 @@ def _plain_card(entry: dict) -> str:
     return "\n".join(lines)
 
 
-def _atrium_card(filenames: dict[str, dict[str, str]], data: dict) -> str:
-    """Shape three: the measurement first.
+def _atrium_card(filenames: dict[str, str], data: dict) -> str:
+    """The measurement first.
 
-    Atrium has no public repo to link and no diagram worth drawing at this
-    size. What it has is figures, so the section opens with them and the prose
-    explains what they are. The third paragraph is the honest-state paragraph
-    and is not optional — see Atlas/Projects/Atrium/Verified-Record.md.
+    Atrium has no public repo to link and no diagram worth drawing. What it
+    has is figures, so the section opens with the one that carries the scale
+    and the other three follow as a line of markdown -- they were in the plate
+    at 9px, which is 2.7px as read on a phone. The third paragraph is the
+    honest-state paragraph and is not optional; see
+    Atlas/Projects/Atrium/Verified-Record.md.
     """
     a = content.ATRIUM
-    show_dark, show_light = _url_pair(data, filenames, "showroom-atrium")
-    dark, light = _url_pair(data, filenames, "atrium-figures")
     cfg = content.SHOWROOMS.get("atrium", {})
-    lines = [f"### {a['heading']}\n", '<div align="center">\n',
-             _picture(show_dark, show_light, cfg.get("aria", "")),
-             f'\n<sub>{cfg.get("caption", "")}</sub>\n', "</div>\n",
-             _picture(dark, light, a["figures_aria"]) + "\n"]
+    lines = [f"### {a['heading']}\n",
+             _img(_url(data, filenames, "showroom-atrium"), cfg.get("aria", "")) + "\n",
+             f'<sub>{cfg.get("caption", "")}</sub>\n',
+             _img(_url(data, filenames, "atrium-figures"), a["figures_aria"]) + "\n",
+             _table(a["table"], a["table_head"]) + "\n"]
     lines.extend(para + "\n" for para in a["body"])
     lines.append(a["repo_line"] + "\n")
     return "\n".join(lines)
 
 
-def _render_readme(data: dict, filenames: dict[str, dict[str, str]]) -> str:
-    hero_dark, hero_light = _url_pair(data, filenames, "hero")
-    orbit_dark, orbit_light = _url_pair(data, filenames, "orbit")
+def _readout_line(contributions: dict | None) -> str:
+    """The hero's four figures, as markdown.
 
-    lines: list[str] = []
-    lines.append('<div align="center">\n')
-    lines.append(_picture(hero_dark, hero_light, content.HERO_ARIA))
-    lines.append("\n</div>\n")
-    lines.append(content.INTRO + "\n")
+    They were drawn inside the plate at 26px and 9px on a 1200 viewBox, which
+    is 7.8px and 2.7px in a 358px phone column. The numbers are still derived
+    in `svg/hero.py`, beside the field they describe; this only sets them.
+    """
+    figs = hero.readout_figures(contributions or {})
+    if not figs:
+        return ""
+    return " &nbsp;·&nbsp; ".join(f"**{n}** {cap}" for n, cap in figs)
 
-    # Sections are separated by their own shape, not by a repeated ornament.
-    # The six rule.svg references that used to sit between them were one
-    # cached request, not six, but they were also the same mark six times
-    # carrying nothing — which is the objection that actually mattered.
+
+def _field_legend(contributions: dict | None) -> str:
+    span = hero.field_span(contributions or {})
+    legend = content.FIELD_LEGEND
+    tail = f" &nbsp;·&nbsp; {span}" if span else ""
+    return f"<sub>{legend}{tail}</sub>"
+
+
+def _start_here() -> str:
+    """The entry point.
+
+    After the hero the eye had nowhere to go. It goes here: three names, three
+    anchors, one claim each. It is markdown rather than a plate because every
+    line of it is a link, and a link cannot exist inside an <img>-referenced
+    SVG -- which is also most of the argument for where the line between plate
+    and prose falls.
+    """
+    lines = [f"### {content.START_HERE_HEADING}\n"]
+    for name, anchor, claim in content.START_HERE:
+        lines.append(f"**[{name}](#{anchor})** &nbsp;·&nbsp; {claim}\n")
+    return "\n".join(lines)
+
+
+def _sections(data: dict, filenames: dict[str, str]) -> list[str]:
+    """One rendered section per project, emitted in the dominant order."""
+    cards: dict[str, str] = {}
     for entry in data["featured"]:
         cfg = entry.get("profile_config") or {}
         has_showroom = entry["name"] in (data.get("showrooms") or {})
         if has_showroom and f"showroom-{_flow_id(entry['name'])}" in filenames:
-            lines.append(_showroom_card(entry, filenames, data))
+            cards[entry["name"]] = _showroom_card(entry, filenames, data)
         elif cfg.get("diagram") == "flow" and cfg.get("stages"):
-            lines.append(_prose_card(entry, filenames, data))
+            cards[entry["name"]] = _prose_card(entry, filenames, data)
         else:
-            lines.append(_plain_card(entry))
-        lines.append("---\n")
+            cards[entry["name"]] = _plain_card(entry)
+    if "showroom-atrium" in filenames:
+        cards["atrium"] = _atrium_card(filenames, data)
 
-    lines.append(_atrium_card(filenames, data))
-    lines.append("---\n")
+    order = content.LAYOUT[content.DOMINANT]["order"]
+    ordered = [cards.pop(name) for name in order if name in cards]
+    # Anything featured but not named in the order keeps its sort position.
+    ordered.extend(cards[e["name"]] for e in data["featured"] if e["name"] in cards)
+    return ordered
+
+
+def _render_readme(data: dict, filenames: dict[str, str]) -> str:
+    """The page, top to bottom.
+
+    Three things changed shape here and they are the same change three times.
+    A README asset is a fixed-ratio image in a fluid column, so its type
+    scales with the column and markdown's does not: at GitHub's profile widths
+    a 1200-unit viewBox renders at 0.82x on a desktop and 0.30x on a phone.
+    Every word that was set below 3.07% of its plate's width is now markdown,
+    every plate that carried no claim is gone, and exactly one section is
+    allowed the full column.
+
+    There is still no separator between sections, for the reason there has
+    never been one: a horizontal rule drawn by GitHub is a mark this repo does
+    not control, in a colour it does not choose, carrying no count and no
+    scale. Every section opens on its own field, and the edge of that field is
+    the only boundary the page needs. What is new is that the fields are no
+    longer all the same width, so the edges now say something.
+    """
+    contributions = data.get("contributions")
+
+    lines: list[str] = [
+        _hero_picture(_url(data, filenames, "hero"),
+                      _url(data, filenames, "hero-still")) + "\n",
+    ]
+    readout = _readout_line(contributions)
+    if readout:
+        lines.append(readout + "\n")
+    lines.append(_field_legend(contributions) + "\n")
+    lines.append(content.HERO_STANDFIRST + "\n")
+    lines.append(content.INTRO + "\n")
+    lines.append(_start_here())
+
+    lines.extend(_sections(data, filenames))
 
     lines.append(f"### {content.ALSO_RUNNING_HEADING}\n")
     for title, prose in content.ALSO_RUNNING:
         lines.append(f"**{title}** &nbsp;·&nbsp; {prose}\n")
-    lines.append("---\n")
 
     lines.append(f"### {content.STACK_HEADING}\n")
-    lines.append('<div align="center">\n')
-    lines.append(_picture(orbit_dark, orbit_light, content.STACK_ORBIT_ARIA))
-    lines.append("\n</div>\n")
-    lines.append("---\n")
+    lines.append(_table(content.STACK_TABLE) + "\n")
 
     lines.append('<div align="center">\n')
-    lines.append(_picture(content.SNAKE_DARK_URL, content.SNAKE_LIGHT_URL, content.SNAKE_ARIA))
+    lines.append(_snake_picture())
     lines.append("\n")
     lines.append(f"<sub>{content.FOOTER_SUB}</sub>\n")
     lines.append(content.FOOTER_LINKS + "\n")
@@ -458,8 +596,8 @@ def _render_readme(data: dict, filenames: dict[str, dict[str, str]]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _write_all(out_dir: Path, variants: dict[str, dict[str, str]],
-               filenames: dict[str, dict[str, str]], readme: str,
+def _write_all(out_dir: Path, variants: dict[str, str],
+               filenames: dict[str, str], readme: str,
                contributions: dict | None = None,
                cache_path: Path | None = None,
                showrooms: dict[str, dict] | None = None) -> tuple[list[Path], list[Path]]:
@@ -472,11 +610,10 @@ def _write_all(out_dir: Path, variants: dict[str, dict[str, str]],
     assets_dir = out_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
     kept: set[Path] = set()
-    for basename, per_theme in variants.items():
-        for theme, body in per_theme.items():
-            path = assets_dir / filenames[basename][theme]
-            path.write_text(body, encoding="utf-8")
-            kept.add(path)
+    for basename, body in variants.items():
+        path = assets_dir / filenames[basename]
+        path.write_text(body, encoding="utf-8")
+        kept.add(path)
     (out_dir / "README.md").write_text(readme, encoding="utf-8")
     removed = []
     for existing in assets_dir.glob("*.svg"):

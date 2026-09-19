@@ -1,0 +1,182 @@
+{
+  "generated_by": "atrium-design",
+  "do_not_edit": true,
+  "sources": [
+    "Sources/AtriumSurface/DayCurve.swift",
+    "Sources/AtriumSurface/FieldRenderer.swift",
+    "Sources/AtriumSurface/LatticeRenderer.swift"
+  ],
+  "resting_point": {
+    "hue_deg": 3.0714285714285716,
+    "lightness": 0.13242857142857142
+  },
+  "time_weighted_point": {
+    "hue_deg": 2.177083333333333,
+    "lightness": 0.1355
+  },
+  "day_curve": {
+    "anchors": [
+      {
+        "hour": 0.0,
+        "hue_deg": 8.6,
+        "lightness": 0.085
+      },
+      {
+        "hour": 6.0,
+        "hue_deg": 2.6,
+        "lightness": 0.11
+      },
+      {
+        "hour": 9.0,
+        "hue_deg": -3.3,
+        "lightness": 0.165
+      },
+      {
+        "hour": 13.0,
+        "hue_deg": -7.8,
+        "lightness": 0.195
+      },
+      {
+        "hour": 17.0,
+        "hue_deg": -1.8,
+        "lightness": 0.16
+      },
+      {
+        "hour": 20.0,
+        "hue_deg": 13.1,
+        "lightness": 0.118
+      },
+      {
+        "hour": 23.0,
+        "hue_deg": 10.1,
+        "lightness": 0.094
+      },
+      {
+        "hour": 24.0,
+        "hue_deg": 8.6,
+        "lightness": 0.085
+      }
+    ],
+    "hue_range_deg": [
+      -7.8,
+      13.1
+    ],
+    "lightness_range": [
+      0.085,
+      0.195
+    ]
+  },
+  "density_ramp": {
+    "steps": [
+      {
+        "d_hue_deg": 0.0,
+        "saturation": 0.55,
+        "lightness": 0.02
+      },
+      {
+        "d_hue_deg": 0.0,
+        "saturation": 0.74,
+        "lightness": 0.155
+      },
+      {
+        "d_hue_deg": 0.0,
+        "saturation": 0.78,
+        "lightness": 0.265
+      },
+      {
+        "d_hue_deg": 0.0,
+        "saturation": 0.8,
+        "lightness": 0.4
+      },
+      {
+        "d_hue_deg": -8.0,
+        "saturation": 0.78,
+        "lightness": 0.59
+      },
+      {
+        "d_hue_deg": -16.0,
+        "saturation": 0.4,
+        "lightness": 0.94
+      },
+      {
+        "d_hue_deg": 0.0,
+        "saturation": 0.0,
+        "lightness": 1.0
+      }
+    ],
+    "lightness_gaps": [
+      0.135,
+      0.11,
+      0.135,
+      0.19,
+      0.35,
+      0.06
+    ]
+  },
+  "tokens": {
+    "field-ground": {
+      "hex": "#2f1615",
+      "origin": "FieldPalette.ground at the resting point"
+    },
+    "field-light-core": {
+      "hex": "#693f29",
+      "origin": "FieldPalette.lightCore at the resting point"
+    },
+    "field-light-mid": {
+      "hex": "#46251c",
+      "origin": "FieldPalette.lightMid at the resting point"
+    },
+    "field-light-far": {
+      "hex": "#261212",
+      "origin": "FieldPalette.lightFar at the resting point"
+    },
+    "field-light-edge": {
+      "hex": "#150b0c",
+      "origin": "FieldPalette.lightEdge at the resting point"
+    },
+    "field-cool-source": {
+      "hex": "#4a1e23",
+      "origin": "FieldPalette.coolSource at the resting point"
+    },
+    "field-band-warm": {
+      "hex": "#674220",
+      "origin": "FieldPalette.bandWarm at the resting point"
+    },
+    "field-band-cool": {
+      "hex": "#4a1b1f",
+      "origin": "FieldPalette.bandCool at the resting point"
+    },
+    "field-band-high": {
+      "hex": "#3b2a15",
+      "origin": "FieldPalette.bandHigh at the resting point"
+    },
+    "density-0": {
+      "hex": "#080302",
+      "origin": "LatticePalette.spec[0] at the resting point's hue"
+    },
+    "density-1": {
+      "hex": "#450d0a",
+      "origin": "LatticePalette.spec[1] at the resting point's hue"
+    },
+    "density-2": {
+      "hex": "#78140f",
+      "origin": "LatticePalette.spec[2] at the resting point's hue"
+    },
+    "density-3": {
+      "hex": "#b81d14",
+      "origin": "LatticePalette.spec[3] at the resting point's hue"
+    },
+    "density-4": {
+      "hex": "#e84552",
+      "origin": "LatticePalette.spec[4] at the resting point's hue"
+    },
+    "density-5": {
+      "hex": "#f6eaec",
+      "origin": "LatticePalette.spec[5] at the resting point's hue"
+    },
+    "density-6": {
+      "hex": "#ffffff",
+      "origin": "LatticePalette.spec[6] at the resting point's hue"
+    }
+  }
+}

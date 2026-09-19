@@ -31,8 +31,8 @@ def _seed_out(tmp: Path) -> tuple[Path, dict[Path, str]]:
     (tmp / "assets").mkdir()
     files = {
         tmp / "README.md": "PREVIOUS README\n",
-        tmp / "assets" / "hero.deadbee-dark.svg": "<svg>previous</svg>",
-        tmp / "assets" / "orbit.deadbee-dark.svg": "<svg>previous orbit</svg>",
+        tmp / "assets" / "hero.deadbee.svg": "<svg>previous</svg>",
+        tmp / "assets" / "orbit.deadbee.svg": "<svg>previous orbit</svg>",
     }
     for p, body in files.items():
         p.write_text(body, encoding="utf-8")
@@ -194,7 +194,7 @@ def test_every_generated_svg_is_well_formed_xml(tmp_path):
 
     A double-quoted font family inside a style="..." attribute closed the
     attribute early. `python3 -m generators.build` cannot see that; only a
-    parser can. Parse every asset the build emits, for both themes.
+    parser can. Parse every asset the build emits.
     """
     import xml.etree.ElementTree as ET
 
@@ -233,7 +233,7 @@ def test_hero_draws_one_mark_per_contribution():
     spec = [("2026-07-%02d" % i, 3) for i in range(1, 11)] + \
            [("2026-08-%02d" % i, 5) for i in range(1, 11)]
     contrib = _contrib(spec)
-    svg = hero.render("dark", "NAME", ["SUB"], contrib)
+    svg = hero.render("NAME", contrib)
     # Each mark is one "h.01" segment; nothing else in the hero emits one.
     assert svg.count("h.01") == contrib["total"] == 80
 
@@ -279,10 +279,236 @@ def test_tokenless_build_reproduces_the_tokened_one(tmp_path, monkeypatch):
         build.build(fixture_path=fixture, orbit_path=orbit, out_dir=live,
                     token="fake-token")
     tokened = (live / "README.md").read_text(encoding="utf-8")
-    # The numbers live in the hero asset, not in the README that references it.
-    hero_svg = next((live / "assets").glob("hero.*-dark.svg")).read_text(encoding="utf-8")
-    assert "CONTRIBUTIONS" in hero_svg and "h.01" in hero_svg
+    # The marks live in the hero asset; the figures they add up to live in the
+    # README, because inside the plate they rendered at 7.8px on a phone.
+    hero_svg = next((live / "assets").glob("hero.*.svg")).read_text(encoding="utf-8")
+    assert "h.01" in hero_svg
+    assert "days active" in tokened
 
     # Second build, no token, reading the cache the first one committed.
     build.build(fixture_path=fixture, orbit_path=orbit, out_dir=live, token=None)
     assert (live / "README.md").read_text(encoding="utf-8") == tokened
+
+
+def test_every_asset_paints_the_page_it_lands_on_before_it_draws():
+    """A transparent asset is the defect this page was first rejected for; a
+    plate in a colour the page is not is the defect it was rejected for next.
+
+    `make build` and the XML check both pass on an SVG with no ground, so
+    nothing in the suite could tell "paints a ground" from "paints nothing".
+    This can, and it now also pins *which* ground. Every asset used to paint
+    `field-light-edge`, Atrium's outer field tone, which measures 6.36 from
+    GitHub's dark canvas in CIELAB at almost the same lightness -- close enough
+    to look like a mistake and far enough to read as a brown slab on a
+    blue-grey page. The ground is the canvas itself now, and it flips with the
+    reader's theme.
+
+    Checked here rather than by eye: the ground is painted, it is painted
+    *first* (a ground after the marks hides them), it carries a light-scheme
+    rule, and the ink is `currentColor` so one media query can move a whole
+    asset.
+    """
+    import re
+
+    from generators.svg import GROUND_DARK, GROUND_LIGHT, INK_LIGHT, field, figures, flow, halftone, hero, orbit, token
+
+    ground = field().strip()
+    first_mark = re.compile(r"<(path|circle|text|line|ellipse|g)\b")
+
+    rendered = {
+        "hero": hero.render("NAME", None),
+        "orbit": orbit.render([{"items": ["a", "b"], "rx": 40, "ry": 10, "duration": 8.0}]),
+        "figures": figures.render("1", "CAP", "aria"),
+        "flow": flow.render([("A", "a"), ("B", "b")]),
+        "halftone": halftone.render({"cols": 2, "rows": 2, "cells": "9090"}, "aria"),
+    }
+    for name, svg in rendered.items():
+        assert ground in svg, f"{name} draws on no field at all"
+        mark = first_mark.search(svg)
+        assert mark, f"{name} drew nothing"
+        assert svg.index(ground) < mark.start(), (
+            f"{name} paints its field after its marks, which hides them")
+        assert GROUND_DARK in svg and GROUND_LIGHT in svg, (
+            f"{name} has no light scheme, so on a light page it is a black slab")
+        assert "prefers-color-scheme: light" in svg, f"{name} never asks the reader"
+        assert token(INK_LIGHT) in svg, f"{name} has no light-theme ink"
+        assert 'fill="#' not in svg and 'stroke="#' not in svg, (
+            f"{name} writes a colour into a mark; ink travels as currentColor so "
+            f"that one media query can move the whole asset")
+
+
+# The whole page gets one moving thing. Nine small ones is what "no
+# animations" looked like: every animation on the rejected page was under 1%
+# of its plate's width, so at a 358px phone column none of them was more than
+# two pixels of travel.
+MAX_ANIMATIONS_ON_THE_PAGE = 1
+
+
+def test_the_page_moves_exactly_once_and_can_be_told_not_to(tmp_path):
+    """One animation, in CSS, with the off switch somewhere it actually works.
+
+    Two things are pinned here and the second one cost a rewrite. SMIL cannot
+    be gated on `prefers-reduced-motion` -- it has no media query -- so every
+    `<animate>` is a defect twice over, and this counts them.
+
+    And a `@media (prefers-reduced-motion: reduce)` block *inside* an asset is
+    not a guard at all. An `<img>`-referenced SVG is told the reader's colour
+    scheme and is not told their motion preference: the same file under the
+    same emulated `reduce` matches the rule when opened as a document and never
+    matches it through an `<img>`, measured in Chromium both ways. So the
+    switch is a `<source media>` in the README, where the page evaluates it,
+    and the still it points at has to actually be still.
+    """
+    import re
+
+    out_dir = _seed_real_build(tmp_path)
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+    smil, moving = [], []
+    for asset in sorted((out_dir / "assets").glob("*.svg")):
+        body = asset.read_text(encoding="utf-8")
+        if re.search(r"<animate(Motion|Transform)?\b", body):
+            smil.append(asset.name)
+        moving += [asset.name] * len(re.findall(r"animation:\s*(?!none\b)\w", body))
+        assert "prefers-reduced-motion" not in body, (
+            f"{asset.name} guards itself with a query an <img> never evaluates; "
+            f"the switch belongs in the README")
+
+    assert not smil, (
+        "SMIL animation cannot be stopped by prefers-reduced-motion: "
+        + ", ".join(smil))
+    assert len(moving) <= MAX_ANIMATIONS_ON_THE_PAGE, (
+        f"{len(moving)} things move on this page: " + ", ".join(moving))
+    assert moving, "nothing moves at all, which is the other half of the complaint"
+
+    assert '<source media="(prefers-reduced-motion: reduce)"' in readme, (
+        "the page moves and never offers a way out of it")
+    still = [a for a in (out_dir / "assets").glob("hero-still.*.svg")]
+    assert len(still) == 1, "no still hero for the reduced-motion source to point at"
+    assert still[0].name in readme
+    assert "animation:" not in still[0].read_text(encoding="utf-8"), (
+        "the still hero animates, so reduce gets the same movement by another name")
+
+
+def test_vendored_tokens_match_atrium_design_when_it_is_checked_out():
+    """`data/atrium-tokens.json` is a copy, and a copy can go stale.
+
+    It is vendored rather than imported so this repo builds in CI with no
+    sibling checkout, which is the right trade — but it means the palette can
+    drift from the Swift it claims to come from and nothing would say so.
+    When `~/dev/atrium-design` is present, compare; when it is not, skip,
+    because CI cannot see it and a test that fails on a missing sibling repo
+    is a test that gets deleted.
+    """
+    import os
+    from pathlib import Path
+
+    import pytest
+
+    upstream = Path(
+        os.environ.get("ATRIUM_DESIGN", "~/dev/atrium-design")
+    ).expanduser() / "tokens" / "tokens.json"
+    if not upstream.is_file():
+        pytest.skip(f"atrium-design not checked out at {upstream}")
+
+    vendored = Path(__file__).resolve().parent.parent / "data" / "atrium-tokens.json"
+    assert vendored.read_text(encoding="utf-8") == upstream.read_text(encoding="utf-8"), (
+        "data/atrium-tokens.json has drifted from atrium-design; "
+        "re-run `python3 bin/generate.py` there and copy tokens/tokens.json across"
+    )
+
+
+def _seed_real_build(tmp_path: Path) -> Path:
+    """Build the page the repo actually ships, into a scratch directory.
+
+    The caches in `data/` are copied rather than read in place: a tokenless
+    build rewrites the contributions and showroom caches it loaded, and a test
+    must not be able to touch the committed ones.
+    """
+    import shutil
+
+    repo = Path(__file__).resolve().parent.parent
+    out_dir = tmp_path / "out"
+    (out_dir / "assets").mkdir(parents=True)
+    shutil.copytree(repo / "data", out_dir / "data")
+    shutil.copytree(repo / "showroom", out_dir / "showroom")
+    build.build(fixture_path=out_dir / "data" / "repos.sample.json",
+                orbit_path=out_dir / "data" / "orbit.json",
+                out_dir=out_dir, token=None)
+    return out_dir
+
+
+# GitHub's profile column, as `bin/page_preview.py` renders it: max-width
+# minus its 16px padding either side.
+DESKTOP_COLUMN = 1012 - 32
+PHONE_COLUMN = 390 - 32
+
+# The smallest text GitHub itself renders on this page is <sub>, at 12px. A
+# mark this page draws should not be smaller than the smallest mark GitHub
+# draws, and 11px leaves a pixel of slack for a rasteriser's rounding.
+MIN_APPARENT_PX = 11.0
+
+
+def test_no_asset_sets_type_too_small_to_read_on_a_phone(tmp_path):
+    """The defect the page was rejected for three times, as a number.
+
+    A README asset is a fixed-ratio image inside a fluid column, so its type
+    scales with the column and markdown's does not. At a 1200-unit viewBox in
+    a 358px phone column that is 0.30x: the hero's readout row was set at 26px
+    and read at 7.8px, its captions at 9px and read at 2.7px. Sixteen of the
+    eighteen distinct type sizes on the rejected page rendered below 8px.
+
+    Width is the divisor, so this cannot be fixed by "using a bigger font" --
+    it is fixed by narrowing the plate or by moving the words out of it, and
+    both happened. This pins the result: any text a generator draws has to be
+    at least 3.07% of its own viewBox width, whatever width that plate is
+    built at.
+
+    It runs against the assets a real build emits, not against the generators,
+    so a plate rendered at a new width is covered the moment it ships.
+    """
+    import re
+
+    out_dir = _seed_real_build(tmp_path)
+    font_px = re.compile(r"font:\s*\d+\s+([\d.]+)px")
+    view_box = re.compile(r'viewBox="0 0 ([\d.]+) [\d.]+"')
+
+    offenders = []
+    checked = 0
+    for asset in sorted((out_dir / "assets").glob("*.svg")):
+        body = asset.read_text(encoding="utf-8")
+        vb = view_box.search(body)
+        assert vb, f"{asset.name} has no viewBox"
+        width = float(vb.group(1))
+        scale = min(1.0, PHONE_COLUMN / width)
+        for size in {float(m) for m in font_px.findall(body)}:
+            checked += 1
+            apparent = size * scale
+            if apparent < MIN_APPARENT_PX:
+                offenders.append(
+                    f"{asset.name}: {size:g}px in a {width:g} viewBox reads at "
+                    f"{apparent:.1f}px in a {PHONE_COLUMN}px column "
+                    f"({size / width * 100:.2f}% of the plate, floor is "
+                    f"{MIN_APPARENT_PX / PHONE_COLUMN * 100:.2f}%)")
+
+    assert checked, "found no type at all, so this test proved nothing"
+    assert not offenders, "type too small to read on a phone:\n  " + "\n  ".join(offenders)
+
+
+def test_the_page_carries_its_figures_as_text(tmp_path):
+    """Every number a reader needs has to survive Ctrl-F and a screen reader.
+
+    GitHub never sees text inside an <img>-referenced SVG: not its own search,
+    not the browser's find, not a copy-paste. A screen reader gets one `alt`
+    string for the whole plate, with no headings and no links inside it. So
+    the line drawn here is that a plate carries marks and at most one large
+    number, and every figure a reader is meant to *read* is markdown.
+
+    This asserts the figures that moved out of the hero and out of the Atrium
+    strip are in README.md and not only in an asset.
+    """
+    out_dir = _seed_real_build(tmp_path)
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+
+    for figure in ("contributions", "longest streak",
+                   "218,016", "10 MB", "418"):
+        assert figure in readme, f"{figure!r} is only inside a plate"

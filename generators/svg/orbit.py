@@ -1,4 +1,4 @@
-from . import palette
+from . import field, palette
 
 VIEW_W = 1200
 VIEW_H = 330
@@ -16,16 +16,17 @@ def _ring_path(idx: int, rx: int, ry: int) -> str:
 RING_STROKE_OPACITIES = [".30", ".45", ".65"]
 
 
-def render(theme: str, rings: list[dict], centre_label: str = "TVP") -> str:
+def render(rings: list[dict], centre_label: str = "TVP") -> str:
     """Render the stack orbit diagram.
 
     rings: list of {"items": [labels], "rx": int, "ry": int, "duration": float}
     """
-    fg, bg = palette(theme)
+    fg, _ = palette()
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {VIEW_W} {VIEW_H}" '
         f'width="{VIEW_W}" height="{VIEW_H}" role="img" aria-label="Tools in orbit">\n'
     ]
+    parts.append(field())
 
     parts.append('  <g>\n    \n')
     ring_parts = []
@@ -40,7 +41,7 @@ def render(theme: str, rings: list[dict], centre_label: str = "TVP") -> str:
     parts.append('  </g>\n')
 
     parts.append(
-        f'  <circle cx="{CX:.1f}" cy="{CY:.1f}" r="{CENTRE_R}" fill="{bg}"/>\n'
+        f'  <circle class="ground" cx="{CX:.1f}" cy="{CY:.1f}" r="{CENTRE_R}"/>\n'
         f'  <circle cx="{CX:.1f}" cy="{CY:.1f}" r="{CENTRE_R}" fill="none" '
         f'stroke="{fg}" stroke-width="1.6" stroke-opacity=".85">\n'
         '    <animate attributeName="stroke-opacity" values=".85;.4;.85" dur="5.5s" repeatCount="indefinite"/>\n'

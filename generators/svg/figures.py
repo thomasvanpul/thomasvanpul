@@ -1,66 +1,74 @@
-"""A figures strip — one lede number and a row of supporting ones.
+"""One measured number, set large enough to survive the column it lands in.
 
-This exists so a featured section can open with a measurement instead of a
-paragraph. It is the same typographic language as the hero's readout row,
-which is deliberate: the two places on the page that state numbers should
-look like the same instrument.
+This used to be a lede number plus a row of three supporting figures. The row
+is gone, and the reason is arithmetic rather than taste.
 
-It carries no data of its own. Whatever is passed in has to be traceable to
-something measured, and for the one caller that currently exists those
-figures come from a dated record in the vault, not from this repo.
+A README asset is a fixed-ratio image inside a fluid column, so its type
+scales with the column while markdown type does not. GitHub's profile column
+is 980px on a desktop and 358px on a phone, which means a 1200-unit viewBox
+renders at 0.30x on a phone. The supporting row was set at 22px and 9px: 6.6px
+and 2.7px as read. They were not small, they were absent.
+
+The fix is not a bigger row. Three figures with captions cannot be set at a
+legible size across one strip at any width that also leaves the lede dominant.
+So the row moved out of the plate and into markdown, where it is legible at
+every width, selectable, and findable by GitHub search. What stays here is the
+one number the section opens on, and its unit.
+
+The floor every text element in this repo is held to is 3.07% of the viewBox
+width -- 11px as read on a 358px phone column, which is below the 12px GitHub
+itself renders <sub> at. `tests/test_build.py` enforces it.
 """
 from __future__ import annotations
 
-from . import palette
+from . import field, palette
 
-VIEW_W = 1200
-VIEW_H = 132
+# Narrower than the page, on purpose. Width here is not free space, it is the
+# divisor: halving the viewBox doubles the apparent size of every mark in it.
+# 760 is the widest this plate can be and still set its caption above the
+# floor (26 / 760 = 3.42%).
+VIEW_W = 760
 
-MARGIN_X = 70.0
-LEDE_NUM_Y = 62.0
-LEDE_CAP_Y = 82.0
-ROW_NUM_Y = 58.0
-ROW_CAP_Y = 78.0
-RULE_Y = 104.0
+# Everything is a fraction of the plate, so resizing it is a change of scale
+# and not a change of design -- and so no width can quietly drop the caption
+# below the 3.07% floor. CAP_FRAC is the binding one at 3.42%.
+# Vertical only. The horizontal inset is zero for the reason hero.py gives:
+# the plate has no edge any more, so an inset is not a margin, it is the one
+# block on the page that does not line up with the rest.
+MARGIN_FRAC = 0.058
+NUM_FRAC = 0.0947
+CAP_FRAC = 0.0342
+ASPECT = 0.205          # height as a fraction of width, at the 760 default
 
 MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
 
 
-def render(theme: str, lede_number: str, lede_caption: str,
-           figures: list[tuple[str, str]], aria: str) -> str:
-    fg, _ = palette(theme)
+def render(number: str, caption: str, aria: str, view_w: int = VIEW_W) -> str:
+    """One number and its unit on Atrium's field.
 
-    parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {VIEW_W} {VIEW_H}" '
-        f'width="{VIEW_W}" height="{VIEW_H}" role="img" aria-label="{aria}">\n',
-        # The lede is left-aligned on the same margin as the body text, so the
-        # number reads as the section's opening line rather than as a banner.
-        f'  <text x="{MARGIN_X:.0f}" y="{LEDE_NUM_Y:.0f}" '
-        f'style="font:600 54px {MONO};letter-spacing:2px" '
-        f'fill="{fg}" fill-opacity=".95">{lede_number}</text>\n',
-        f'  <text x="{MARGIN_X + 3:.0f}" y="{LEDE_CAP_Y:.0f}" '
-        f'style="font:400 10px {MONO};letter-spacing:2.4px" '
-        f'fill="{fg}" fill-opacity=".55">{lede_caption}</text>\n',
-    ]
+    `number` and `caption` must be traceable to something measured; this
+    module carries no data of its own and composes nothing.
+    """
+    fg, _ = palette()
+    m = view_w * MARGIN_FRAC
+    num_px = view_w * NUM_FRAC
+    cap_px = view_w * CAP_FRAC
+    view_h = round(view_w * ASPECT)
+    num_y = m + num_px * 0.78
+    cap_y = num_y + cap_px * 1.25
+    rule_y = view_h - m * 0.4
 
-    if figures:
-        right_edge = VIEW_W - MARGIN_X
-        span = right_edge - 470.0
-        step = span / len(figures)
-        for i, (number, caption) in enumerate(figures):
-            cx = 470.0 + step * (i + 0.5)
-            parts.append(
-                f'  <text x="{cx:.1f}" y="{ROW_NUM_Y:.0f}" text-anchor="middle" '
-                f'style="font:600 22px {MONO};letter-spacing:1.4px" '
-                f'fill="{fg}" fill-opacity=".88">{number}</text>\n'
-                f'  <text x="{cx:.1f}" y="{ROW_CAP_Y:.0f}" text-anchor="middle" '
-                f'style="font:400 9px {MONO};letter-spacing:1.3px" '
-                f'fill="{fg}" fill-opacity=".50">{caption}</text>\n'
-            )
-
-    parts.append(
-        f'  <line x1="{MARGIN_X:.0f}" y1="{RULE_Y:.0f}" x2="{VIEW_W - MARGIN_X:.0f}" '
-        f'y2="{RULE_Y:.0f}" stroke="{fg}" stroke-opacity=".16" stroke-width="1"/>\n'
-        "</svg>\n"
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {view_w} {view_h}" '
+        f'width="{view_w}" height="{view_h}" role="img" aria-label="{aria}">\n'
+        + field()
+        + f'  <text x="0" y="{num_y:.1f}" '
+          f'style="font:600 {num_px:.1f}px {MONO};letter-spacing:{view_w * 0.004:.1f}px" '
+          f'fill="{fg}" fill-opacity=".95">{number}</text>\n'
+          f'  <text x="3" y="{cap_y:.1f}" '
+          f'style="font:400 {cap_px:.1f}px {MONO};letter-spacing:{view_w * 0.0032:.1f}px" '
+          f'fill="{fg}" fill-opacity=".58">{caption}</text>\n'
+          f'  <line x1="0" y1="{rule_y:.1f}" x2="{view_w:.0f}" '
+          f'y2="{rule_y:.1f}" stroke="{fg}" stroke-opacity=".16" stroke-width="1"/>\n'
+          "</svg>\n"
     )
-    return "".join(parts)

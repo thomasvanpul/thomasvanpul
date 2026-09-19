@@ -1,7 +1,7 @@
 PYTHON ?= python3
 PREVIEW_DIR := preview
 
-.PHONY: build preview clean
+.PHONY: build preview page clean
 
 build:
 	$(PYTHON) -m generators.build
@@ -13,18 +13,26 @@ build:
 # you looking in entirely the wrong place. rsvg-convert needs no library path.
 RSVG ?= $(shell command -v rsvg-convert 2>/dev/null)
 
-# Each theme is rasterised onto the background GitHub actually serves it on.
-# Without -b, rsvg-convert composites onto transparency, which most viewers
-# show as white — and a dark-theme asset drawn in #e6edf3 on white is
-# invisible. Previews that cannot be judged are worse than no previews.
+# No -b any more. Every asset paints Atrium's field as its first element, so
+# there is nothing for a rasteriser background to show through and no theme
+# suffix left to switch on: one asset, one ground, whatever page it lands on.
+# The -b flag mattered when the assets were transparent, because rsvg
+# composites onto white and a dark-theme asset drawn in near-white on white
+# is invisible. A preview that cannot be judged is worse than no preview.
 preview: build
 	@mkdir -p $(PREVIEW_DIR)
 	@test -n "$(RSVG)" || { echo "rsvg-convert not found. brew install librsvg"; exit 1; }
 	@for svg in assets/*.svg; do \
 		out="$(PREVIEW_DIR)/$$(basename $$svg .svg).png"; \
-		case "$$svg" in *-dark.svg) bg="#0d1117";; *) bg="#ffffff";; esac; \
-		$(RSVG) -w 1200 -b "$$bg" -o "$$out" "$$svg" && echo "rasterised $$out"; \
+		$(RSVG) -w 1200 -o "$$out" "$$svg" && echo "rasterised $$out"; \
 	done
+
+# The assets one at a time answer "is this asset right". They cannot answer
+# "does this page hold together", which is the question that has been failed
+# twice, so `page` renders the whole README through GitHub's own markdown
+# renderer at desktop and phone width, in both themes.
+page: build
+	$(PYTHON) bin/page_preview.py
 
 clean:
 	rm -rf $(PREVIEW_DIR)
