@@ -1,0 +1,22 @@
+slug	kind	url	note
+gh-platane	profile	https://github.com/Platane	motion — one generated snake SVG eating the contribution grid, and nothing else on the page
+gh-jh3y	profile	https://github.com/jh3y	motion — the whole README is a single looping SVG, no text at all
+gh-orhun	profile	https://github.com/orhun	motion — paired light/dark animated terminal GIFs anchoring a very short text block
+gh-antfu	profile	https://github.com/antfu	restraint — the whole profile is one monospaced row of lowercase links
+gh-tholman	profile	https://github.com/tholman	type — an ASCII skyline in a <pre> block where each building is a repo link
+gh-rednafi	profile	https://github.com/rednafi	type — one centred sentence plus an auto-updated article table, zero graphics
+gh-simonw	profile	https://github.com/simonw	rhythm — three text columns of releases, posts and TILs, updated hourly, no imagery
+gh-caneco	profile	https://github.com/caneco	restraint — a designer's profile with no imagery at all, just weighted lines
+gh-natemoo-re	profile	https://github.com/natemoo-re	type — prose and a single horizontal rule doing all the structuring
+gh-lowlighter	profile	https://github.com/lowlighter	imagery — self-generated SVG infographic panels from his own metrics renderer, not shields
+gh-rossjrw	profile	https://github.com/rossjrw	imagery — a board SVG regenerated on every turn of a game strangers can play
+gh-novatorem	profile	https://github.com/novatorem	imagery — one generated dark now-playing card, centred, and that is the page
+web-rauno	site	https://rauno.me	restraint — interaction detail carrying an almost bare page
+web-brittanychiang	site	https://brittanychiang.com	colour — dark navy, one mono accent, strict vertical rhythm
+web-emilkowalski	site	https://emilkowal.ski	motion — dark quiet layout where every transition is the demonstration
+web-georgefrancis	site	https://georgefrancis.dev	imagery — generative SVG forms produced in-page by code
+web-anandchowdhary	site	https://anandchowdhary.com	data — live personal metrics treated as the page's typography
+gmunk-interface-022	frame	file:///Users/TvpPro/Library/Mobile Documents/iCloud~md~obsidian/Documents/vault_general/Atlas/Projects/Atrium/References/tron-ares_gmunk_interface.022.jpg	imagery — a dense particle field held between two docked vertical readout rails
+gmunk-interface-029	frame	file:///Users/TvpPro/Library/Mobile Documents/iCloud~md~obsidian/Documents/vault_general/Atlas/Projects/Atrium/References/tron-ares_gmunk_interface.029.jpg	type — title lockup, tiny caption block, three staggered rails each with one big numeral
+gmunk-interface-033	frame	file:///Users/TvpPro/Library/Mobile Documents/iCloud~md~obsidian/Documents/vault_general/Atlas/Projects/Atrium/References/tron-ares_gmunk_interface.033.jpg	restraint — hairline rules and 6px mono labels annotating one subject, nothing else lit
+gmunk-process-047	frame	file:///Users/TvpPro/Library/Mobile Documents/iCloud~md~obsidian/Documents/vault_general/Atlas/Projects/Atrium/References/tron-ares_gmunk_process.047.jpg	colour — near-black ground with warm marks, most of the frame empty

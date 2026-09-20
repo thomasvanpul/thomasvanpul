@@ -94,6 +94,46 @@ GROUND_LIGHT = "#ffffff"
 # Every mark in this repo is painted in this, so the ink is set in one place.
 FG = "currentColor"
 
+# Dim: not a colour, an alpha. Atrium's ramp has no neutral mid-tone -- it steps
+# from `density-3` #b81d14 straight to `density-5` #f6eaec -- so there is no
+# token that means "muted text" and there never will be one at this resting
+# point. Every token-clean generator in this repo already renders a muted mark
+# as the ink at reduced opacity (`lattice.py` uses .32 and .25, `halftone.py`
+# ramps from .40), so dim follows that convention rather than inventing a grey.
+#
+# 0.593 is derived, not chosen: it is the mean per-channel alpha that
+# reproduces Primer's `fg.muted` from `density-5` over `canvas.default` (per
+# channel 0.541 / 0.604 / 0.634). It lands within a maximum channel error of
+# 12, in red, of that target. The residual is the point rather than
+# an error: Atrium's dim is warm because Atrium's ink is warm, and a cool grey
+# sitting on a warm ramp is exactly the foreign colour `conformance.py` exists
+# to catch.
+DIM_ALPHA = 0.593
+
+# Accent: Primer's `accent.fg`, dark. Kept on 19 Sep, when Thomas said the blue
+# links stay and the task that shipped this page stopped fighting GitHub's link
+# colour. The SVG plates never need this literal -- they inherit it through
+# `FG`, which is why that task closed at zero strays with one exception. The
+# raster plates (`animate.py`, `motion.py`) cannot inherit anything, so they
+# bake it, and it is listed upstream as an exception for exactly that reason.
+# The argument is the one `GROUND_DARK` already makes: Atrium's ramp is warm end
+# to end and has no blue, so a link rendered in it would not read as a link.
+ACCENT_LINK = "#58a6ff"
+
+
+def rgb(value: str) -> tuple[int, int, int]:
+    """`#rrggbb` as a channel triple, for the raster plates."""
+    v = value.lstrip("#")
+    return tuple(int(v[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def over(fg: str, bg: str, alpha: float) -> str:
+    """`fg` composited onto `bg` at `alpha`, as `#rrggbb`. No new literals."""
+    f, b = rgb(fg), rgb(bg)
+    return "#%02x%02x%02x" % tuple(
+        round(b[i] + alpha * (f[i] - b[i])) for i in range(3)
+    )
+
 
 def palette() -> tuple[str, str]:
     """(ink, ground) as paint values, not as colours.
