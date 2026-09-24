@@ -209,7 +209,7 @@ def ramp_at(curve: dict, hue_deg: float) -> list[tuple[int, int, int]]:
     """Atrium's seven density colours at a given hue.
 
     Checked against the published tokens: at the resting point's hue this
-    returns `#080302 #450d0a #78140f #b81d14 #e84552 #f6eaec #ffffff`, which
+    returns `#080302 #450d0a #71130e #aa1b13 #e31c1f #de6876 #e1b7c0`, which
     is `density-0..6` in `data/atrium-tokens.json` exactly.
     """
     out = []

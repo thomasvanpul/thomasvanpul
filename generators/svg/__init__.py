@@ -94,15 +94,18 @@ GROUND_LIGHT = "#ffffff"
 # Every mark in this repo is painted in this, so the ink is set in one place.
 FG = "currentColor"
 
-# Dim: not a colour, an alpha. Atrium's ramp has no neutral mid-tone -- it steps
-# from `density-3` #b81d14 straight to `density-5` #f6eaec -- so there is no
+# Dim: not a colour, an alpha. Atrium's ramp has no neutral mid-tone -- every
+# step is the hour's hue at some lightness, `density-3` through `density-6` all
+# reds and pinks -- so there is no
 # token that means "muted text" and there never will be one at this resting
 # point. Every token-clean generator in this repo already renders a muted mark
 # as the ink at reduced opacity (`lattice.py` uses .32 and .25, `halftone.py`
 # ramps from .40), so dim follows that convention rather than inventing a grey.
 #
 # 0.593 is derived, not chosen: it is the mean per-channel alpha that
-# reproduces Primer's `fg.muted` from `density-5` over `canvas.default` (per
+# reproduced Primer's `fg.muted` from `density-5` over `canvas.default` when
+# density-5 was the old near-white, before the 19 Sep ramp (it is not re-derived: against
+# today's pink density-5 no alpha reaches a grey) (per
 # channel 0.541 / 0.604 / 0.634). It lands within a maximum channel error of
 # 12, in red, of that target. The residual is the point rather than
 # an error: Atrium's dim is warm because Atrium's ink is warm, and a cool grey

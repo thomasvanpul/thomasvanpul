@@ -4,7 +4,7 @@
   "sources": [
     "Sources/AtriumSurface/DayCurve.swift",
     "Sources/AtriumSurface/FieldRenderer.swift",
-    "Sources/AtriumSurface/LatticeRenderer.swift"
+    "Sources/AtriumSurface/LatticeLanguage.swift"
   ],
   "resting_point": {
     "hue_deg": 3.0714285714285716,
@@ -81,36 +81,36 @@
       {
         "d_hue_deg": 0.0,
         "saturation": 0.78,
-        "lightness": 0.265
+        "lightness": 0.25
       },
       {
         "d_hue_deg": 0.0,
         "saturation": 0.8,
-        "lightness": 0.4
+        "lightness": 0.37
       },
       {
-        "d_hue_deg": -8.0,
+        "d_hue_deg": -4.0,
         "saturation": 0.78,
-        "lightness": 0.59
+        "lightness": 0.5
+      },
+      {
+        "d_hue_deg": -10.0,
+        "saturation": 0.64,
+        "lightness": 0.64
       },
       {
         "d_hue_deg": -16.0,
-        "saturation": 0.4,
-        "lightness": 0.94
-      },
-      {
-        "d_hue_deg": 0.0,
-        "saturation": 0.0,
-        "lightness": 1.0
+        "saturation": 0.42,
+        "lightness": 0.8
       }
     ],
     "lightness_gaps": [
       0.135,
-      0.11,
-      0.135,
-      0.19,
-      0.35,
-      0.06
+      0.095,
+      0.12,
+      0.13,
+      0.14,
+      0.16
     ]
   },
   "tokens": {
@@ -152,31 +152,35 @@
     },
     "density-0": {
       "hex": "#080302",
-      "origin": "LatticePalette.spec[0] at the resting point's hue"
+      "origin": "LatticeLanguage.ramp[0] at the resting point's hue"
     },
     "density-1": {
       "hex": "#450d0a",
-      "origin": "LatticePalette.spec[1] at the resting point's hue"
+      "origin": "LatticeLanguage.ramp[1] at the resting point's hue"
     },
     "density-2": {
-      "hex": "#78140f",
-      "origin": "LatticePalette.spec[2] at the resting point's hue"
+      "hex": "#71130e",
+      "origin": "LatticeLanguage.ramp[2] at the resting point's hue"
     },
     "density-3": {
-      "hex": "#b81d14",
-      "origin": "LatticePalette.spec[3] at the resting point's hue"
+      "hex": "#aa1b13",
+      "origin": "LatticeLanguage.ramp[3] at the resting point's hue"
     },
     "density-4": {
-      "hex": "#e84552",
-      "origin": "LatticePalette.spec[4] at the resting point's hue"
+      "hex": "#e31c1f",
+      "origin": "LatticeLanguage.ramp[4] at the resting point's hue"
     },
     "density-5": {
-      "hex": "#f6eaec",
-      "origin": "LatticePalette.spec[5] at the resting point's hue"
+      "hex": "#de6876",
+      "origin": "LatticeLanguage.ramp[5] at the resting point's hue"
     },
     "density-6": {
+      "hex": "#e1b7c0",
+      "origin": "LatticeLanguage.ramp[6] at the resting point's hue"
+    },
+    "now": {
       "hex": "#ffffff",
-      "origin": "LatticePalette.spec[6] at the resting point's hue"
+      "origin": "LatticeLanguage.now"
     }
   }
 }

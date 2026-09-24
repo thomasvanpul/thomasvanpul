@@ -56,8 +56,9 @@ instead."
 Colour: three, and what each one means
 --------------------------------------
 Ground is the page's own `#0d1117`. The seven-step density ramp out of
-`data/atrium-tokens.json` carries how much happened. One near-white -- step 6,
-`#ffffff` -- is the focal reserve, and it is spent on exactly one thing per
+`data/atrium-tokens.json` carries how much happened. One white -- the `now`
+token, `LatticeLanguage.now`, which the ramp stops short of since 19 Sep -- is
+the focal reserve, and it is spent on exactly one thing per
 frame: the lane being read. That resolves the note's open question ("Either
 text takes step 6 or the reserve goes") in favour of the reserve; drawn text
 takes step 5.
@@ -267,8 +268,12 @@ def palette(theme: str) -> dict:
     # The panel ground is the page ground, unmixed. That is what makes a
     # readout survive over a lit field: it is the one rectangle on the plate
     # darker (or, on light, lighter) than everything around it.
+    # The focal reserve is `now` on dark: the ramp's top step is a pale tint,
+    # and white is the one colour that means the thing being read. On light
+    # the reversed ramp's far end, density-0, is already the extreme.
+    focal = ramp[6] if theme == "light" else svg.rgb(svg.token("now"))
     return {"ground": ground, "ramp": ramp,
-            "panel": ground, "focal": ramp[6], "text": ramp[5],
+            "panel": ground, "focal": focal, "text": ramp[5],
             "dim": _mix(ground, ramp[5], 0.52)}
 
 
@@ -336,7 +341,7 @@ def _tone(pal, level: float, near: float, focal: bool = False):
     than a blend of two, because that is how `LatticeRenderer` bands it. Depth
     is then a mix toward ground, which is the only place a blend happens.
     """
-    step = pal["ramp"][6] if focal else pal["ramp"][min(4, int(level * 4.999))]
+    step = pal["focal"] if focal else pal["ramp"][min(4, int(level * 4.999))]
     return _mix(pal["ground"], step, max(0.06, min(1.0, near)))
 
 
