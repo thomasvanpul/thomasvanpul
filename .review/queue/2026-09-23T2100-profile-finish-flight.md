@@ -1,5 +1,6 @@
 # The profile: finish "flight" and make it the README, ready to push
-Written: 2026-09-19
+Written: 2026-09-23
+Moved: 2026-09-23 by chat from next.md (originally written 2026-09-19), so review-status stops reporting a task /review would refuse as stale. Premise not re-checked since 2026-09-19: verify it before building.
 Queue: auto
 Weight: light
 Model: claude-fable-5-1
