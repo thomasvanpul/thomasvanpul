@@ -32,17 +32,17 @@ sys.path.insert(0, str(ROOT))
 
 from bin.directions import WIDTHS, gfm_html, page, pick_theme, shoot  # noqa: E402
 from bin.instrument import record  # noqa: E402
-from generators import corridor  # noqa: E402
+from generators import content, corridor  # noqa: E402
+from generators.build import hero_picture  # noqa: E402
 
 OUT = ROOT / "design" / "hero"
 
-# Name, one line, links. The task's words, and the whole text block.
-NAME = "Thomas van Pul"
-LINE = ("Design Engineering at Imperial College London. "
-        "I build hardware and the software that runs it.")
-LINKS = ("[thomasvp.com](https://thomasvp.com) &nbsp;·&nbsp; "
-         "[linkedin.com/in/vanpulthomas](https://www.linkedin.com/in/vanpulthomas)"
-         " &nbsp;·&nbsp; `vanpulthomas@gmail.com`")
+# Name, one line, links. The task's words, and the whole text block. They
+# live in `generators/content.py` since the pick shipped, so a finish here
+# previews exactly the text `generators/build.py` publishes.
+NAME = content.NAME
+LINE = content.LINE
+LINKS = content.FOOTER_LINKS
 
 RAW = "https://raw.githubusercontent.com/thomasvanpul/thomasvanpul/main/assets/"
 
@@ -57,29 +57,6 @@ HOLD_END_MS = 8500
 
 def _name(stem: str, data: bytes, ext: str) -> str:
     return f"{stem}.{hashlib.sha256(data).hexdigest()[:7]}.{ext}"
-
-
-def _picture(plates: dict[str, dict], names: dict[str, str]) -> str:
-    """One element carrying four images: two themes times motion or not.
-
-    A reader with reduced motion set gets the still for their theme, which is
-    why those two sources come first -- a browser takes the first source that
-    matches, and `prefers-reduced-motion` has to beat `prefers-color-scheme`
-    rather than lose to it. The light animation is the bare `img`, so a client
-    that understands none of this still gets a picture rather than alt text.
-    """
-    url = lambda key: RAW + names[key]                            # noqa: E731
-    return "\n".join([
-        "<picture>",
-        '  <source media="(prefers-reduced-motion: reduce) and '
-        f'(prefers-color-scheme: dark)" srcset="{url("still-dark")}">',
-        '  <source media="(prefers-reduced-motion: reduce)" '
-        f'srcset="{url("still-light")}">',
-        '  <source media="(prefers-color-scheme: dark)" '
-        f'srcset="{url("anim-dark")}">',
-        f'  <img alt="{plates["light"]["alt"]}" src="{url("anim-light")}">',
-        "</picture>",
-    ])
 
 
 def build_one(variant: str) -> dict:
@@ -99,8 +76,9 @@ def build_one(variant: str) -> dict:
             (assets / fname).write_bytes(blob)
             names[f"{stem}-{theme}"] = fname
 
-    readme = "\n".join([_picture(plates, names), "", f"# {NAME}", "",
-                        LINE, "", LINKS, ""])
+    urls = {key: RAW + name for key, name in names.items()}
+    readme = "\n".join([hero_picture(urls, plates["light"]["alt"]), "",
+                        f"# {NAME}", "", LINE, "", LINKS, ""])
     (out_dir / "README.md").write_text(readme, encoding="utf-8")
 
     html = gfm_html(readme)

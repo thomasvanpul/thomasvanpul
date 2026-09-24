@@ -32,6 +32,15 @@ LAYOUT = {
 
 HERO_NAME = "THOMAS VAN PUL"
 
+# The page since 2026-09-24: the corridor Thomas picked on 19 Sep, and under
+# it name, one line, links. Nothing else. `HERO_PICK` names the finish in
+# `design/hero/` whose assets `generators/build.py` ships; `bin/hero.py`
+# builds them. The alt text lives with the plate, in `corridor.ALT`.
+HERO_PICK = "flight"
+NAME = "Thomas van Pul"
+LINE = ("Design Engineering at Imperial College London. "
+        "I build hardware and the software that runs it.")
+
 HERO_ARIA = "Thomas van Pul, Design Engineering at Imperial College London"
 
 # The four lines that used to rotate inside the hero plate, as one line of

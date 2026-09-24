@@ -1,7 +1,10 @@
 """Safety tests for the profile builder."""
 from __future__ import annotations
 
+import hashlib
 import json
+import re
+import struct
 from pathlib import Path
 from unittest.mock import patch
 
@@ -9,6 +12,7 @@ import pytest
 
 from generators import build
 from generators import content
+from generators import corridor
 from generators import github as gh
 
 
@@ -34,6 +38,7 @@ def _seed_out(tmp: Path) -> tuple[Path, dict[Path, str]]:
         tmp / "README.md": "PREVIOUS README\n",
         tmp / "assets" / "hero.deadbee.svg": "<svg>previous</svg>",
         tmp / "assets" / "orbit.deadbee.svg": "<svg>previous orbit</svg>",
+        tmp / "assets" / "anim-dark.deadbee.gif": "GIF89a previous",
     }
     for p, body in files.items():
         p.write_text(body, encoding="utf-8")
@@ -153,130 +158,33 @@ def test_streak_computation_with_gap():
     assert gh.current_streak([]) == 0
 
 
-def test_missing_profile_yml_falls_back_to_plain_card(tmp_path):
-    out_dir = tmp_path
-    (out_dir / "assets").mkdir()
-    orbit = _write_orbit(tmp_path)
-    fixture = tmp_path / "unused.json"
-
-    api_repo = {
-        "name": "plain-repo",
-        "html_url": "https://github.com/thomasvanpul/plain-repo",
-        "default_branch": "main",
-        "description": "A repo with no diagram config.",
-        "language": "Rust",
-        "topics": ["profile-feature"],
-        "pushed_at": "2026-01-01T00:00:00Z",
-        "archived": False,
-        "fork": False,
-    }
-    contribs = {"total": 1000, "current_streak": 5, "longest_streak": 12}
-
-    with patch.object(gh, "fetch_featured_repos", return_value=[api_repo]), \
-         patch.object(gh, "fetch_profile_config", return_value=None), \
-         patch.object(gh, "fetch_contributions", return_value=contribs):
-        build.build(fixture_path=fixture, orbit_path=orbit,
-                    out_dir=out_dir, token="fake-token")
-
-    readme = (out_dir / "README.md").read_text(encoding="utf-8")
-    assert "### plain-repo" in readme
-    assert "A repo with no diagram config." in readme
-    # No flow SVG should have been emitted for the plain repo.
-    assert not any(p.name.startswith("flow-plain-repo") for p in (out_dir / "assets").iterdir())
-
 
 def _contrib(days_spec: list[tuple[str, int]]) -> dict:
     return gh.summarise(sum(c for _d, c in days_spec),
                         [{"date": d, "count": c} for d, c in days_spec])
 
 
-def test_every_generated_svg_is_well_formed_xml(tmp_path):
-    """The build happily wrote invalid XML once and the gate passed anyway.
-
-    A double-quoted font family inside a style="..." attribute closed the
-    attribute early. `python3 -m generators.build` cannot see that; only a
-    parser can. Parse every asset the build emits.
-    """
-    import xml.etree.ElementTree as ET
-
-    out_dir = tmp_path
-    (out_dir / "assets").mkdir()
-    orbit = _write_orbit(tmp_path)
-    fixture = tmp_path / "unused.json"
-
-    api_repo = {
-        "name": "some-repo", "html_url": "https://github.com/thomasvanpul/some-repo",
-        "default_branch": "main", "description": "desc", "language": "Python",
-        "topics": ["profile-feature"], "pushed_at": "2026-08-01T00:00:00Z",
-        "archived": False, "fork": False,
-    }
-    contribs = _contrib([("2026-07-%02d" % i, i) for i in range(1, 29)])
-
-    with patch.object(gh, "fetch_featured_repos", return_value=[api_repo]), \
-         patch.object(gh, "fetch_profile_config", return_value=None), \
-         patch.object(gh, "fetch_contributions", return_value=contribs):
-        build.build(fixture_path=fixture, orbit_path=orbit, out_dir=out_dir,
-                    token="fake-token")
-
-    written = sorted((out_dir / "assets").glob("*.svg"))
-    assert written, "build emitted no SVGs to check"
-    for path in written:
-        try:
-            ET.fromstring(path.read_text(encoding="utf-8"))
-        except ET.ParseError as e:
-            raise AssertionError(f"{path.name} is not well-formed XML: {e}") from e
 
 
-def test_hero_plots_no_contribution_field_and_still_derives_the_figures():
-    """The unit field is gone on purpose; this stops it coming back unnoticed.
-
-    It drew one mark per contribution, shaded by calendar month. The encoding
-    was real and illegible: two bands at 0.60 and 0.34 opacity with 1-unit
-    month rules, on a 1200 viewBox that renders at 0.33x on a phone, which is
-    2.0px of pitch. Thomas read it as "all the dots under my name doesn\'t make
-    sense" on 2026-09-19 and it was removed rather than relabelled.
-
-    This is not the old assertion loosened. The old one counted the marks and
-    the marks are gone, so counting them can only be rewritten or deleted --
-    and deleting it would leave nothing to notice a field quietly returning,
-    which is the failure this file exists to catch. So it asserts the opposite
-    fact, and separately that the record itself did *not* leave: the four
-    figures are still derived here, and build.py sets them in markdown where
-    they are legible at every width.
-    """
-    from generators.svg import hero
-
-    spec = [("2026-07-%02d" % i, 3) for i in range(1, 11)] + \
-           [("2026-08-%02d" % i, 5) for i in range(1, 11)]
-    contrib = _contrib(spec)
-    svg = hero.render("NAME", contrib)
-
-    # Each mark was one "h.01" segment, and nothing else in the hero emits one.
-    assert "h.01" not in svg, "the per-contribution field is back in the hero"
-    # A field of 2,774 marks was most of the plate's height; 144 units is the
-    # name, its rule and the planet, and nothing below them.
-    assert 'viewBox="0 0 1200 144"' in svg
-
-    figures = hero.readout_figures(contrib)
-    assert [caption for _, caption in figures] == [
-        "contributions", "days active", "busiest day", "longest streak"]
-    assert figures[0][0] == "80" == f"{contrib['total']}"
+FAKE_HERO = {
+    "still-dark": ("png", b"\x89PNG dark still"),
+    "still-light": ("png", b"\x89PNG light still"),
+    "anim-dark": ("gif", b"GIF89a dark"),
+    "anim-light": ("gif", b"GIF89a light"),
+}
 
 
-def test_tokenless_build_reproduces_the_tokened_one(tmp_path, monkeypatch):
-    """The contributions cache exists so `make build` is offline-reproducible.
+def _fake_hero(tmp: Path) -> Path:
+    """A finish's four files, tiny, under a hash the build must not trust."""
+    d = tmp / "hero"
+    d.mkdir()
+    for stem, (ext, body) in FAKE_HERO.items():
+        (d / f"{stem}.0000000.{ext}").write_bytes(body)
+    return d
 
-    Before it, a build with no token silently dropped the contributions data
-    and rewrote README.md without it, so every local run and every Stop-hook
-    gate left the tree dirty against what CI publishes.
-    """
-    # build(token=None) means "read GITHUB_TOKEN from the environment", so
-    # without this the second build picks up a real token when one is
-    # exported and quietly goes to the network instead of to the cache.
-    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
 
-    orbit = _write_orbit(tmp_path)
-    fixture = tmp_path / "fixture.json"
+def _write_fixture(tmp: Path) -> Path:
+    fixture = tmp / "fixture.json"
     fixture.write_text(json.dumps({
         "owner": "thomasvanpul", "repo": "thomasvanpul", "branch": "main",
         "featured": [{
@@ -287,6 +195,53 @@ def test_tokenless_build_reproduces_the_tokened_one(tmp_path, monkeypatch):
             "profile_config": {},
         }],
     }), encoding="utf-8")
+    return fixture
+
+
+def test_hero_ships_under_its_content_hash_and_every_orphan_goes(tmp_path, monkeypatch):
+    """The README names a file by the hash of what is in it, and nothing else
+    stays in assets/.
+
+    raw.githubusercontent caches by name, so a file that changed under a name
+    that did not is the old file for as long as the cache likes. The hash is
+    recomputed from the bytes rather than read off the source filename, which
+    is what `_fake_hero` fakes with seven zeros. And the old page's SVGs, plus
+    any earlier animation, are removed: the first orphan sweep only globbed
+    `*.svg`, which would have left every superseded GIF on the branch forever.
+    """
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    out_dir, _snapshot = _seed_out(tmp_path)
+    build.build(fixture_path=_write_fixture(tmp_path), orbit_path=_write_orbit(tmp_path),
+                out_dir=out_dir, token=None, hero_dir=_fake_hero(tmp_path))
+
+    expected = {f"{stem}.{hashlib.sha256(body).hexdigest()[:7]}.{ext}"
+                for stem, (ext, body) in FAKE_HERO.items()}
+    assert {p.name for p in (out_dir / "assets").iterdir()} == expected
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+    for name in expected:
+        assert f"/main/assets/{name}" in readme, f"{name} was written but never named"
+
+    # A half-rebuilt finish -- two animations, or none -- must not ship.
+    (tmp_path / "hero" / "anim-dark.1111111.gif").write_bytes(b"GIF89a second")
+    with pytest.raises(build.BuildError, match="expected one anim-dark"):
+        build.build(fixture_path=_write_fixture(tmp_path), orbit_path=_write_orbit(tmp_path),
+                    out_dir=out_dir, token=None, hero_dir=tmp_path / "hero")
+
+
+def test_tokenless_build_reproduces_the_tokened_one(tmp_path, monkeypatch):
+    """`make build` with no token writes the page CI publishes, byte for byte.
+
+    The page no longer draws anything from GitHub data, so this is now cheap
+    to keep true and still worth pinning: the Stop-hook gate runs the build
+    without a token, and a page that differed by token would leave every
+    session's tree dirty. The tokened build must also still write the
+    contributions cache, because that cache is what `bin/field_data.py` lays
+    the corridor's substrate from.
+    """
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    orbit = _write_orbit(tmp_path)
+    fixture = _write_fixture(tmp_path)
+    hero_dir = _fake_hero(tmp_path)
 
     api_repo = {
         "name": "some-repo", "html_url": "https://github.com/thomasvanpul/some-repo",
@@ -302,125 +257,138 @@ def test_tokenless_build_reproduces_the_tokened_one(tmp_path, monkeypatch):
          patch.object(gh, "fetch_profile_config", return_value=None), \
          patch.object(gh, "fetch_contributions", return_value=contribs):
         build.build(fixture_path=fixture, orbit_path=orbit, out_dir=live,
-                    token="fake-token")
+                    token="fake-token", hero_dir=hero_dir)
     tokened = (live / "README.md").read_text(encoding="utf-8")
-    # That the contributions actually reached the render, checked without the
-    # unit field, which used to be the proof and was removed on 2026-09-19.
-    # What still encodes them in the hero is the planet: six rings, one per
-    # month, each drawn for its share of the busiest of the six. So a hero
-    # built with this data must differ from one built with none.
-    hero_svg = next((live / "assets").glob("hero.*.svg")).read_text(encoding="utf-8")
-    from generators.svg import hero as hero_mod
-    assert hero_svg != hero_mod.render(content.HERO_NAME, None), (
-        "the hero is identical with and without contributions, so nothing in "
-        "it carries them any more")
-    assert "stroke-dasharray" in hero_svg
-    # The figures those marks added up to live in the README, because inside
-    # the plate they rendered at 7.8px on a phone.
-    assert "days active" in tokened
+    cache = json.loads((live / "data" / "contributions.json").read_text(encoding="utf-8"))
+    assert len(cache["days"]) == 28, "the tokened build did not refresh the cache"
 
-    # Second build, no token, reading the cache the first one committed.
-    build.build(fixture_path=fixture, orbit_path=orbit, out_dir=live, token=None)
+    build.build(fixture_path=fixture, orbit_path=orbit, out_dir=live, token=None,
+                hero_dir=hero_dir)
     assert (live / "README.md").read_text(encoding="utf-8") == tokened
 
 
-def test_every_asset_paints_the_page_it_lands_on_before_it_draws():
-    """A transparent asset is the defect this page was first rejected for; a
-    plate in a colour the page is not is the defect it was rejected for next.
+def _seed_real_build(tmp_path: Path) -> Path:
+    """Build the page the repo actually ships, into a scratch directory.
 
-    `make build` and the XML check both pass on an SVG with no ground, so
-    nothing in the suite could tell "paints a ground" from "paints nothing".
-    This can, and it now also pins *which* ground. Every asset used to paint
-    `field-light-edge`, Atrium's outer field tone, which measures 6.36 from
-    GitHub's dark canvas in CIELAB at almost the same lightness -- close enough
-    to look like a mistake and far enough to read as a brown slab on a
-    blue-grey page. The ground is the canvas itself now, and it flips with the
-    reader's theme.
-
-    Checked here rather than by eye: the ground is painted, it is painted
-    *first* (a ground after the marks hides them), it carries a light-scheme
-    rule, and the ink is `currentColor` so one media query can move a whole
-    asset.
+    `data/` is copied rather than read in place: a tokenless build rewrites
+    the contributions cache it loaded, and a test must not be able to touch
+    the committed one. The hero is read from the committed finish under
+    `design/hero/`, which is exactly what `make build` reads.
     """
-    import re
+    import shutil
 
-    from generators.svg import GROUND_DARK, GROUND_LIGHT, INK_LIGHT, field, figures, flow, halftone, hero, orbit, token
-
-    ground = field().strip()
-    first_mark = re.compile(r"<(path|circle|text|line|ellipse|g)\b")
-
-    rendered = {
-        "hero": hero.render("NAME", None),
-        "orbit": orbit.render([{"items": ["a", "b"], "rx": 40, "ry": 10, "duration": 8.0}]),
-        "figures": figures.render("1", "CAP", "aria"),
-        "flow": flow.render([("A", "a"), ("B", "b")]),
-        "halftone": halftone.render({"cols": 2, "rows": 2, "cells": "9090"}, "aria"),
-    }
-    for name, svg in rendered.items():
-        assert ground in svg, f"{name} draws on no field at all"
-        mark = first_mark.search(svg)
-        assert mark, f"{name} drew nothing"
-        assert svg.index(ground) < mark.start(), (
-            f"{name} paints its field after its marks, which hides them")
-        assert GROUND_DARK in svg and GROUND_LIGHT in svg, (
-            f"{name} has no light scheme, so on a light page it is a black slab")
-        assert "prefers-color-scheme: light" in svg, f"{name} never asks the reader"
-        assert token(INK_LIGHT) in svg, f"{name} has no light-theme ink"
-        assert 'fill="#' not in svg and 'stroke="#' not in svg, (
-            f"{name} writes a colour into a mark; ink travels as currentColor so "
-            f"that one media query can move the whole asset")
-
-
-# The whole page gets one moving thing. Nine small ones is what "no
-# animations" looked like: every animation on the rejected page was under 1%
-# of its plate's width, so at a 358px phone column none of them was more than
-# two pixels of travel.
-MAX_ANIMATIONS_ON_THE_PAGE = 1
+    repo = Path(__file__).resolve().parent.parent
+    out_dir = tmp_path / "out"
+    (out_dir / "assets").mkdir(parents=True)
+    shutil.copytree(repo / "data", out_dir / "data")
+    build.build(fixture_path=out_dir / "data" / "repos.sample.json",
+                orbit_path=out_dir / "data" / "orbit.json",
+                out_dir=out_dir, token=None)
+    return out_dir
 
 
 def test_the_page_moves_exactly_once_and_can_be_told_not_to(tmp_path):
-    """One animation, in CSS, with the off switch somewhere it actually works.
+    """One animation, with the off switch somewhere it actually works.
 
-    Two things are pinned here and the second one cost a rewrite. SMIL cannot
-    be gated on `prefers-reduced-motion` -- it has no media query -- so every
-    `<animate>` is a defect twice over, and this counts them.
-
-    And a `@media (prefers-reduced-motion: reduce)` block *inside* an asset is
-    not a guard at all. An `<img>`-referenced SVG is told the reader's colour
-    scheme and is not told their motion preference: the same file under the
-    same emulated `reduce` matches the rule when opened as a document and never
-    matches it through an `<img>`, measured in Chromium both ways. So the
-    switch is a `<source media>` in the README, where the page evaluates it,
-    and the still it points at has to actually be still.
+    A `@media (prefers-reduced-motion: reduce)` block *inside* an asset is
+    not a guard: an `<img>`-referenced file is told the reader's colour scheme
+    and is not told their motion preference, measured in Chromium both ways on
+    2026-09-19. So the switch is a `<source media>` in the README, it comes
+    before the colour-scheme sources so it wins, and the still it points at
+    is a PNG, which cannot move. And the snake is gone with the old page: the
+    corridor is the one thing that moves, in either theme.
     """
-    import re
-
     out_dir = _seed_real_build(tmp_path)
     readme = (out_dir / "README.md").read_text(encoding="utf-8")
-    smil, moving = [], []
-    for asset in sorted((out_dir / "assets").glob("*.svg")):
-        body = asset.read_text(encoding="utf-8")
-        if re.search(r"<animate(Motion|Transform)?\b", body):
-            smil.append(asset.name)
-        moving += [asset.name] * len(re.findall(r"animation:\s*(?!none\b)\w", body))
-        assert "prefers-reduced-motion" not in body, (
-            f"{asset.name} guards itself with a query an <img> never evaluates; "
-            f"the switch belongs in the README")
 
-    assert not smil, (
-        "SMIL animation cannot be stopped by prefers-reduced-motion: "
-        + ", ".join(smil))
-    assert len(moving) <= MAX_ANIMATIONS_ON_THE_PAGE, (
-        f"{len(moving)} things move on this page: " + ", ".join(moving))
-    assert moving, "nothing moves at all, which is the other half of the complaint"
+    assert readme.count("<picture>") == 1 and readme.count("<img ") == 1, (
+        "the page shows more than one image")
+    assert "/output/" not in readme, "the snake is back, so two things move"
+    sources = re.findall(r'<source media="([^"]+)" srcset="[^"]*/assets/([^"]+)">',
+                         readme)
+    assert [m for m, _ in sources][:2] == [
+        "(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)",
+        "(prefers-reduced-motion: reduce)",
+    ], "reduced motion has to be offered before a colour scheme, or it loses"
+    for _media, name in sources[:2]:
+        assert name.endswith(".png"), f"the reduced-motion source {name} can move"
+        assert (out_dir / "assets" / name).is_file()
+    assert not list((out_dir / "assets").glob("*.svg")), (
+        "an SVG from the old page survived the build")
 
-    assert '<source media="(prefers-reduced-motion: reduce)"' in readme, (
-        "the page moves and never offers a way out of it")
-    still = [a for a in (out_dir / "assets").glob("hero-still.*.svg")]
-    assert len(still) == 1, "no still hero for the reduced-motion source to point at"
-    assert still[0].name in readme
-    assert "animation:" not in still[0].read_text(encoding="utf-8"), (
-        "the still hero animates, so reduce gets the same movement by another name")
+
+# GitHub's profile column, as `bin/page_preview.py` renders it: max-width
+# minus its 16px padding either side.
+PHONE_COLUMN = 390 - 32
+
+# The smallest text GitHub itself renders on a page is <sub>, at 12px. A
+# mark this page draws should not be smaller than the smallest mark GitHub
+# draws, and 11px leaves a pixel of slack for a rasteriser's rounding.
+MIN_APPARENT_PX = 11.0
+
+# The task's ceiling for each animated file. A README image is fetched on
+# every visit and raw.githubusercontent does not stream a GIF, so the plate
+# is paid for in full before a frame shows.
+HERO_BUDGET_BYTES = 1500 * 1024
+
+
+def _png_size(data: bytes) -> tuple[int, int]:
+    return struct.unpack(">II", data[16:24])
+
+
+def _gif_size(data: bytes) -> tuple[int, int]:
+    return struct.unpack("<HH", data[6:10])
+
+
+def test_the_plate_reads_on_a_phone_and_fits_the_budget(tmp_path):
+    """The defect the page was rejected for three times, as a number.
+
+    A README image is a fixed-ratio image in a fluid column, so its type
+    scales with the column and markdown's does not. The corridor is drawn at
+    `corridor.WIDTH` units and lands in a 358px phone column, so every size
+    it sets has to clear the 11px floor after that scale. `corridor._t`
+    raises below `corridor.FLOOR` at draw time; this pins the two sizes it
+    actually uses and the width the shipped files were really drawn at, so a
+    plate rebuilt wider is caught the moment it ships.
+    """
+    out_dir = _seed_real_build(tmp_path)
+    scale = PHONE_COLUMN / corridor.WIDTH
+    for name, units in (("LABEL", corridor.LABEL), ("VALUE", corridor.VALUE)):
+        assert units * scale >= MIN_APPARENT_PX, (
+            f"corridor.{name} is {units:g} units, {units * scale:.1f}px on a phone")
+    assert corridor.FLOOR * scale >= MIN_APPARENT_PX - 0.01
+
+    for path in sorted((out_dir / "assets").iterdir()):
+        data = path.read_bytes()
+        width = (_gif_size(data) if data[:6] in (b"GIF87a", b"GIF89a")
+                 else _png_size(data))[0]
+        assert width == corridor.WIDTH, (
+            f"{path.name} is {width} wide; the type floor was computed for "
+            f"{corridor.WIDTH}")
+        if path.name.startswith("anim-"):
+            assert len(data) <= HERO_BUDGET_BYTES, (
+                f"{path.name} is {len(data) / 1024:.0f} KB, over "
+                f"{HERO_BUDGET_BYTES // 1024} KB")
+
+
+def test_the_page_carries_its_text_as_text(tmp_path):
+    """Everything a reader needs has to survive Ctrl-F and a screen reader.
+
+    GitHub never sees text inside an image: not its own search, not the
+    browser's find, not a copy-paste. A screen reader gets one `alt` string
+    for the whole plate. So the name, the line and the links are markdown,
+    and the alt says what the plate shows rather than naming it.
+    """
+    out_dir = _seed_real_build(tmp_path)
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+
+    assert f"# {content.NAME}\n" in readme
+    assert content.LINE in readme
+    for link in ("https://thomasvp.com", "linkedin.com/in/vanpulthomas",
+                 "vanpulthomas@gmail.com"):
+        assert link in readme, f"{link!r} is not on the page"
+    assert f'alt="{corridor.ALT[content.HERO_PICK]}"' in readme
+    assert readme.count("\n#") == 1, "more than one heading on a page of three lines"
 
 
 def test_vendored_tokens_match_atrium_design_when_it_is_checked_out():
@@ -451,98 +419,3 @@ def test_vendored_tokens_match_atrium_design_when_it_is_checked_out():
     )
 
 
-def _seed_real_build(tmp_path: Path) -> Path:
-    """Build the page the repo actually ships, into a scratch directory.
-
-    The caches in `data/` are copied rather than read in place: a tokenless
-    build rewrites the contributions and showroom caches it loaded, and a test
-    must not be able to touch the committed ones.
-    """
-    import shutil
-
-    repo = Path(__file__).resolve().parent.parent
-    out_dir = tmp_path / "out"
-    (out_dir / "assets").mkdir(parents=True)
-    shutil.copytree(repo / "data", out_dir / "data")
-    shutil.copytree(repo / "showroom", out_dir / "showroom")
-    build.build(fixture_path=out_dir / "data" / "repos.sample.json",
-                orbit_path=out_dir / "data" / "orbit.json",
-                out_dir=out_dir, token=None)
-    return out_dir
-
-
-# GitHub's profile column, as `bin/page_preview.py` renders it: max-width
-# minus its 16px padding either side.
-DESKTOP_COLUMN = 1012 - 32
-PHONE_COLUMN = 390 - 32
-
-# The smallest text GitHub itself renders on this page is <sub>, at 12px. A
-# mark this page draws should not be smaller than the smallest mark GitHub
-# draws, and 11px leaves a pixel of slack for a rasteriser's rounding.
-MIN_APPARENT_PX = 11.0
-
-
-def test_no_asset_sets_type_too_small_to_read_on_a_phone(tmp_path):
-    """The defect the page was rejected for three times, as a number.
-
-    A README asset is a fixed-ratio image inside a fluid column, so its type
-    scales with the column and markdown's does not. At a 1200-unit viewBox in
-    a 358px phone column that is 0.30x: the hero's readout row was set at 26px
-    and read at 7.8px, its captions at 9px and read at 2.7px. Sixteen of the
-    eighteen distinct type sizes on the rejected page rendered below 8px.
-
-    Width is the divisor, so this cannot be fixed by "using a bigger font" --
-    it is fixed by narrowing the plate or by moving the words out of it, and
-    both happened. This pins the result: any text a generator draws has to be
-    at least 3.07% of its own viewBox width, whatever width that plate is
-    built at.
-
-    It runs against the assets a real build emits, not against the generators,
-    so a plate rendered at a new width is covered the moment it ships.
-    """
-    import re
-
-    out_dir = _seed_real_build(tmp_path)
-    font_px = re.compile(r"font:\s*\d+\s+([\d.]+)px")
-    view_box = re.compile(r'viewBox="0 0 ([\d.]+) [\d.]+"')
-
-    offenders = []
-    checked = 0
-    for asset in sorted((out_dir / "assets").glob("*.svg")):
-        body = asset.read_text(encoding="utf-8")
-        vb = view_box.search(body)
-        assert vb, f"{asset.name} has no viewBox"
-        width = float(vb.group(1))
-        scale = min(1.0, PHONE_COLUMN / width)
-        for size in {float(m) for m in font_px.findall(body)}:
-            checked += 1
-            apparent = size * scale
-            if apparent < MIN_APPARENT_PX:
-                offenders.append(
-                    f"{asset.name}: {size:g}px in a {width:g} viewBox reads at "
-                    f"{apparent:.1f}px in a {PHONE_COLUMN}px column "
-                    f"({size / width * 100:.2f}% of the plate, floor is "
-                    f"{MIN_APPARENT_PX / PHONE_COLUMN * 100:.2f}%)")
-
-    assert checked, "found no type at all, so this test proved nothing"
-    assert not offenders, "type too small to read on a phone:\n  " + "\n  ".join(offenders)
-
-
-def test_the_page_carries_its_figures_as_text(tmp_path):
-    """Every number a reader needs has to survive Ctrl-F and a screen reader.
-
-    GitHub never sees text inside an <img>-referenced SVG: not its own search,
-    not the browser's find, not a copy-paste. A screen reader gets one `alt`
-    string for the whole plate, with no headings and no links inside it. So
-    the line drawn here is that a plate carries marks and at most one large
-    number, and every figure a reader is meant to *read* is markdown.
-
-    This asserts the figures that moved out of the hero and out of the Atrium
-    strip are in README.md and not only in an asset.
-    """
-    out_dir = _seed_real_build(tmp_path)
-    readme = (out_dir / "README.md").read_text(encoding="utf-8")
-
-    for figure in ("contributions", "longest streak",
-                   "218,016", "10 MB", "418"):
-        assert figure in readme, f"{figure!r} is only inside a plate"
