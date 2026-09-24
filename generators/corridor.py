@@ -665,27 +665,40 @@ def _ground_panel(d, box, pal, alpha: float = 1.0):
 PANEL_H = 16 + LABEL + 14 + VALUE + 10 + LABEL + 6 + LABEL + 18
 
 
-def _readout(d, pal, right: float, y: float, lane: dict,
-             alpha: float) -> float:
+def _readout(d, pal, x: float, y: float, lane: dict, alpha: float,
+             on_right: bool = True) -> tuple[float, float]:
     """The docked panel: which lane is being read, and its three real counts.
 
     It does not fade. A panel at 40% over a lit field is the caption problem
     the measurement above rules out, so the handover hides it instead: below
     half opacity it is simply not drawn, and it comes back carrying the next
     lane's numbers. No frame ever shows a blend of two lanes.
+
+    `x` is the edge the panel docks to, and the type anchors to that edge.
+    Docked right the type is right-aligned to it; docked left the type
+    starts at `x + PANEL_PAD`, which is the chronometer's own left edge, so
+    the date line above and the counts below share one margin. The first
+    build right-aligned both sides to the widest lane's panel, so a narrow
+    lane docked left sat up to 60 units off the chronometer's margin.
+
+    Returns the type's left edge and the panel's far edge.
     """
     lines = _readout_lines(lane)
-    left = right - _fits(lines) - PANEL_PAD
+    width = _fits(lines)
+    if on_right:
+        left, x0, x1 = x - width - PANEL_PAD, x - width - 2 * PANEL_PAD, x
+    else:
+        left, x0, x1 = x + PANEL_PAD, x, x + width + 2 * PANEL_PAD
     if alpha < 0.5:
-        return left
-    _ground_panel(d, [left - PANEL_PAD, y, right, y + PANEL_H], pal)
+        return left, x1 if on_right else x0
+    _ground_panel(d, [x0, y, x1, y + PANEL_H], pal)
     at = y + 16
     for k, (string, size, track) in enumerate(lines):
         _t(d, left, at, string, size,
            pal["text"] if k < 2 else pal["dim"], bold=k < 2, tracking=track,
            where=f"readout line {k}")
         at += size + (14 if k == 0 else 10 if k == 1 else 6)
-    return left
+    return left, x0 if on_right else x1
 
 
 def _readout_lines(lane: dict):
@@ -710,11 +723,6 @@ def _count(n: int, noun: str) -> str:
     same one every other number on this page uses.
     """
     return f"{n:,} {noun}" + ("" if n == 1 else "S")
-
-
-def panel_width(lns) -> float:
-    """The widest panel any lane needs, so every frame docks to one edge."""
-    return max(_fits(_readout_lines(l)) for l in lns) + 2 * PANEL_PAD
 
 
 def _leader(d, pal, frm, to, alpha: float) -> None:
@@ -830,6 +838,8 @@ READOUT_ALT = (
     "lane's real commit, file and week counts. Every mark stacked above a "
     "lane is one commit.")
 
+ALT = {"flight": FLIGHT_ALT, "readout": READOUT_ALT}
+
 
 def _frame(variant: str, theme: str, i: int, cells, lns, pal, plan, path):
     from PIL import Image, ImageDraw
@@ -882,17 +892,14 @@ def _frame(variant: str, theme: str, i: int, cells, lns, pal, plan, path):
         # composition is different at every station rather than the same one
         # five times.
         on_right = anchor[0] < cam.w / 2
-        width = panel_width(lns)
-        px = (WIDTH - PAD) if on_right else (PAD + width)
+        px = (WIDTH - PAD) if on_right else PAD
         py = h - PANEL_H - PAD
-        edge = _readout(d, pal, px, py, lns[reading], settled)
-        # The leader stops at the panel's own edge, not at its text. `_readout`
-        # returns where the type starts, which is PANEL_PAD inside the painted
-        # rectangle, and drawing to that ran the rule up against the `1` of
-        # `12 COMMITS`.
+        _, edge = _readout(d, pal, px, py, lns[reading], settled, on_right)
+        # The leader stops at the panel's own edge, not at its text: the
+        # first build drew it to where the type starts and ran the rule up
+        # against the `1` of `12 COMMITS`.
         _leader(d, pal, (anchor[0] + view[0] * SS, anchor[1] + view[1] * SS),
-                (edge - PANEL_PAD if on_right else px, py + PANEL_H / 2),
-                settled)
+                (edge, py + PANEL_H / 2), settled)
     else:
         _chronometer(d, pal, PAD, PAD - 12, _week_start(week_i), week_i + 1,
                      ground=False)
@@ -1013,5 +1020,5 @@ def build(variant: str, theme: str) -> dict:
             "sizes": sizes, "still": buf.getvalue(), "still_frame": at,
             "frames": len(frames), "fps": FPS, "seconds": len(frames) / FPS,
             "size": (WIDTH, frames[0].height),
-            "alt": FLIGHT_ALT if variant == "flight" else READOUT_ALT,
+            "alt": ALT[variant],
             "lanes": lns, "plan": plan}
