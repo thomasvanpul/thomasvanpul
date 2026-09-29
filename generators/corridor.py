@@ -262,7 +262,7 @@ def palette(theme: str) -> dict:
     ramp = ramp_at(curve, curve["resting_point"]["hue_deg"])
     if theme == "light":
         ramp = list(reversed(ramp))
-        ground = (246, 248, 250)          # GitHub's light canvas
+        ground = svg.rgb(svg.GROUND_LIGHT)
     else:
         ground = svg.rgb(svg.GROUND_DARK)
     # The panel ground is the page ground, unmixed. That is what makes a
