@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 .venv/
 .playwright-mcp/
+
+# agent working files, kept local (Thomas 12 Oct)
+.review/
+.claude/
+.pytest_cache/

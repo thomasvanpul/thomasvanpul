@@ -1,3 +1,0 @@
-set -e
-python3 -m pytest tests -q
-python3 -m generators.build
