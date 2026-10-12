@@ -12,6 +12,7 @@ on:
     paths:
       - "generators/**"
       - "data/**"
+      - "design/cards/**"
       - ".github/workflows/profile.yml"
 
 # One build at a time. Never cancel an in-flight run — we don't want a commit
@@ -70,6 +71,8 @@ jobs:
           set -euo pipefail
           git config user.name "profile-bot"
           git config user.email "profile-bot@users.noreply.github.com"
+          # data/activity.json is the "most recent push" line's cache, so a
+          # new push elsewhere shows up here as a data/ change.
           # data/ is in the list because the build now commits the caches it
           # reads on a tokenless run: data/contributions.json and the showroom
           # grids. Leaving them out would let the committed caches drift away

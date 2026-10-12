@@ -1,0 +1,39 @@
+{
+ "_field": {
+  "from": "2025-09-14",
+  "to": "2026-09-19"
+ },
+ "atrium": {
+  "lane": "ATRIUM · SURFACE",
+  "files": {
+   "dark": "atrium-dark.4f9b69f.png",
+   "light": "atrium-light.553f871.png"
+  },
+  "frame": 0,
+  "commits": 195,
+  "files_touched": 404,
+  "weeks": 3
+ },
+ "blueband": {
+  "lane": "BLUEBAND",
+  "files": {
+   "dark": "blueband-dark.ffb4e86.png",
+   "light": "blueband-light.efe2ebc.png"
+  },
+  "frame": 16,
+  "commits": 13,
+  "files_touched": 11,
+  "weeks": 1
+ },
+ "numeris": {
+  "lane": "NUMERIS",
+  "files": {
+   "dark": "numeris-dark.183df35.png",
+   "light": "numeris-light.7e23ff6.png"
+  },
+  "frame": 16,
+  "commits": 712,
+  "files_touched": 1062,
+  "weeks": 12
+ }
+}

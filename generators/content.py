@@ -41,7 +41,76 @@ NAME = "Thomas van Pul"
 LINE = ("Design Engineering at Imperial College London. "
         "I build hardware and the software that runs it.")
 
-HERO_ARIA = "Thomas van Pul, Design Engineering at Imperial College London"
+# --- the interactive page, 12 Oct 2026 ---------------------------------------
+#
+# Thomas: "i dont want it to be animation i want it to be interactive". A
+# README runs no JavaScript, so interactive means what a visitor can open or
+# click: each project is a <details> card, each picture is a link, and one
+# line under the links is rewritten by the daily Action from real push data.
+#
+# Every sentence below is copied from the prose that was on the page before
+# 24 Sep (FEATURED, ATRIUM, ALSO_RUNNING, STACK_TABLE further down), with the
+# em dashes taken out and nothing added. `lane` names the corridor lane whose
+# still `bin/cards.py` draws for the card; `repo` is the public repository the
+# picture and the repo link go to, None where the work is private.
+CARDS = {
+    "atrium": {
+        "lane": "ATRIUM · SURFACE",
+        "lane_alt": "Atrium surface repository",
+        "title": "Atrium",
+        "what": "a spatial desktop for macOS, in Swift and Metal",
+        "repo": None,
+        "body": [
+            "It draws the machine's own record as a navigable three-dimensional "
+            "field: every mark a real event, depth is recency.",
+            "The measurement is the part worth reading. The suite returned a red "
+            "verdict on **13 of 33 runs of unchanged code**. The scene was anchoring "
+            "to wall-clock time at process start, and pinning it collapsed 393 "
+            "drifting values to 5 timings and 3 pixels of GPU noise.",
+            "**No users, no release, and the acceptance harness has never passed.** "
+            "Engineering depth, not delivery.",
+        ],
+        "table_head": ("Measured", "2026-09-16"),
+        "table": [("Swift", "18,470 lines, 75 files")] + [
+            # ATRIUM["table"], below, unchanged.
+            ("Tests", "418 assertions, 38% of the code"),
+            ("Events", "218,016 from 31 repositories"),
+            ("Runtime", "10 MB resident, 0% idle CPU"),
+            ("Acceptance", "11 criteria, all UNMEASURED"),
+            ("Interface", "3 of 19 designed elements built"),
+        ],
+        "links": "Private repo.",
+    },
+    "blueband": {
+        "lane": "BLUEBAND",
+        "lane_alt": "blueband-concept",
+        "title": "BlueBand",
+        "what": "a wearable motion band, in development",
+        "repo": "blueband-concept",
+        "body": [
+            "Enclosure, board, firmware and app, one person doing the whole chain.",
+        ],
+        "repo_note": "concept model and the render pipeline. Web and CAD repos are private.",
+    },
+    "numeris": {
+        "lane": "NUMERIS",
+        "lane_alt": "Finance-Tracker",
+        "title": "Numeris",
+        "what": "a finance app I use daily",
+        "repo": "Finance-Tracker",
+        "body": [
+            "Plaid in, market data alongside it, normalised into Postgres, out "
+            "through a typed API. Daily use is what makes it real.",
+        ],
+        "repo_note": None,
+    },
+}
+
+# The card whose still heads the page. Atrium leads (Thomas, 19 Sep: "atrium
+# way too little"), so its card carries no second copy of the same picture.
+LEAD_CARD = "atrium"
+
+HERO_ARIA ="Thomas van Pul, Design Engineering at Imperial College London"
 
 # The four lines that used to rotate inside the hero plate, as one line of
 # markdown. They left the plate because at 15px on a 1200 viewBox they read at

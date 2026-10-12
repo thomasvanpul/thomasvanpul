@@ -916,6 +916,44 @@ def _frame(variant: str, theme: str, i: int, cells, lns, pal, plan, path):
     return im if SS == 1 else im.resize((WIDTH, h), Image.LANCZOS)
 
 
+def lane_still(variant: str, theme: str, label: str,
+               lag: int = 0) -> tuple[bytes, int, dict]:
+    """One still of the flight, docked on the lane called `label`.
+
+    The page stopped moving on 12 Oct ("i dont want it to be animation i want
+    it to be interactive"), so each project card carries the frame where the
+    camera is reading that project's own lane, at the middle of its window:
+    with the panel docked on it. Only that frame is drawn. `lag` steps the
+    camera back that many frames, so the busiest week sits a little way down
+    the corridor instead of under the near edge.
+    """
+    from io import BytesIO
+
+    check_layout()
+    cells, cols, _rows = grid()
+    if cols != GRID_COLS:
+        raise ValueError(f"field-grid.json is {cols} columns, not {GRID_COLS}")
+    lns = lanes()
+    idx = next((i for i, l in enumerate(lns) if l["label"] == label), None)
+    if idx is None:
+        raise ValueError(f"no lane {label!r}; have {[l['label'] for l in lns]}")
+    path = camera_path()
+    # Not the loop's own schedule: its windows tile 96 frames between five
+    # anchors, and the middle of Atrium surface's window falls in February,
+    # 28 weeks before that lane has a commit, so the still read 195 COMMITS
+    # over an empty lane. A still has no handover to make, so it gets one
+    # window holding the whole loop on this lane, and the frame is the one
+    # where the lane's busiest week reaches the camera, which is how
+    # `schedule` anchors a window in the first place.
+    plan = [{"lane": idx, "start": 0, "frames": FRAMES}]
+    peak = max(range(WEEKS), key=lns[idx]["commits"].__getitem__)
+    at = max(0, _frame_of_week(peak, path) - lag)
+    im = _frame(variant, theme, at, cells, lns, palette(theme), plan, path)
+    buf = BytesIO()
+    im.save(buf, format="PNG", optimize=True)
+    return buf.getvalue(), at, lns[idx]
+
+
 def _foot(d, pal, h: int, lane: dict) -> None:
     """Three counts, never more: `animate._foot` proves four does not fit."""
     items = [("COMMITS", f"{lane['total']:,}"), ("FILES", f"{lane['files']:,}"),

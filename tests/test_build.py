@@ -166,20 +166,21 @@ def _contrib(days_spec: list[tuple[str, int]]) -> dict:
 
 
 
-FAKE_HERO = {
-    "still-dark": ("png", b"\x89PNG dark still"),
-    "still-light": ("png", b"\x89PNG light still"),
-    "anim-dark": ("gif", b"GIF89a dark"),
-    "anim-light": ("gif", b"GIF89a light"),
-}
+FAKE_HERO = {f"{key}-{theme}": ("png", f"\x89PNG {key} {theme}".encode())
+             for key in content.CARDS for theme in ("dark", "light")}
 
 
 def _fake_hero(tmp: Path) -> Path:
-    """A finish's four files, tiny, under a hash the build must not trust."""
+    """Every card still, tiny, under a hash the build must not trust, and the
+    manifest `bin/cards.py` writes beside them."""
     d = tmp / "hero"
     d.mkdir()
     for stem, (ext, body) in FAKE_HERO.items():
         (d / f"{stem}.0000000.{ext}").write_bytes(body)
+    manifest = {"_field": {"from": "2025-09-14", "to": "2026-09-19"}}
+    manifest.update({key: {"commits": 1, "files_touched": 2, "weeks": 3}
+                     for key in content.CARDS})
+    (d / "cards.json").write_text(json.dumps(manifest), encoding="utf-8")
     return d
 
 
@@ -221,9 +222,9 @@ def test_hero_ships_under_its_content_hash_and_every_orphan_goes(tmp_path, monke
     for name in expected:
         assert f"/main/assets/{name}" in readme, f"{name} was written but never named"
 
-    # A half-rebuilt finish -- two animations, or none -- must not ship.
-    (tmp_path / "hero" / "anim-dark.1111111.gif").write_bytes(b"GIF89a second")
-    with pytest.raises(build.BuildError, match="expected one anim-dark"):
+    # A half-rebuilt set -- two stills for a card, or none -- must not ship.
+    (tmp_path / "hero" / "atrium-dark.1111111.png").write_bytes(b"\x89PNG second")
+    with pytest.raises(build.BuildError, match="expected one atrium-dark"):
         build.build(fixture_path=_write_fixture(tmp_path), orbit_path=_write_orbit(tmp_path),
                     out_dir=out_dir, token=None, hero_dir=tmp_path / "hero")
 
@@ -287,34 +288,89 @@ def _seed_real_build(tmp_path: Path) -> Path:
     return out_dir
 
 
-def test_the_page_moves_exactly_once_and_can_be_told_not_to(tmp_path):
-    """One animation, with the off switch somewhere it actually works.
+def test_nothing_on_the_page_moves(tmp_path):
+    """Thomas, 12 Oct 2026: "i dont want it to be animation i want it to be
+    interactive".
 
-    A `@media (prefers-reduced-motion: reduce)` block *inside* an asset is
-    not a guard: an `<img>`-referenced file is told the reader's colour scheme
-    and is not told their motion preference, measured in Chromium both ways on
-    2026-09-19. So the switch is a `<source media>` in the README, it comes
-    before the colour-scheme sources so it wins, and the still it points at
-    is a PNG, which cannot move. And the snake is gone with the old page: the
-    corridor is the one thing that moves, in either theme.
+    So every image the page ships is a PNG with no animation chunk (an APNG
+    is a PNG with an `acTL` before its first `IDAT`), no GIF survives in
+    assets/, and the snake, which moves, stays off.
     """
     out_dir = _seed_real_build(tmp_path)
     readme = (out_dir / "README.md").read_text(encoding="utf-8")
 
-    assert readme.count("<picture>") == 1 and readme.count("<img ") == 1, (
-        "the page shows more than one image")
-    assert "/output/" not in readme, "the snake is back, so two things move"
-    sources = re.findall(r'<source media="([^"]+)" srcset="[^"]*/assets/([^"]+)">',
-                         readme)
-    assert [m for m, _ in sources][:2] == [
-        "(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)",
-        "(prefers-reduced-motion: reduce)",
-    ], "reduced motion has to be offered before a colour scheme, or it loses"
-    for _media, name in sources[:2]:
-        assert name.endswith(".png"), f"the reduced-motion source {name} can move"
-        assert (out_dir / "assets" / name).is_file()
+    assert "/output/" not in readme, "the snake is back, and it moves"
+    assert "prefers-reduced-motion" not in readme, "there is motion to reduce"
+    shipped = sorted((out_dir / "assets").iterdir())
+    assert shipped, "the build shipped no images"
+    for path in shipped:
+        data = path.read_bytes()
+        assert data[:8] == b"\x89PNG\r\n\x1a\n", f"{path.name} is not a PNG"
+        assert b"acTL" not in data[:data.index(b"IDAT")], f"{path.name} is an APNG"
+        assert f"/main/assets/{path.name}" in readme, f"{path.name} shipped but unnamed"
     assert not list((out_dir / "assets").glob("*.svg")), (
         "an SVG from the old page survived the build")
+
+
+def test_the_page_is_something_a_visitor_opens_and_clicks(tmp_path):
+    """What "interactive" can mean on a README, pinned.
+
+    GitHub runs no script on a profile and strips `style`, so the page's
+    interaction is `<details>` a visitor opens and pictures that are links.
+    Every project card is closed by default, every card still is inside an
+    `<a>`, and the blank line after `</summary>` is there, because without it
+    GitHub prints the card's markdown as literal text.
+    """
+    out_dir = _seed_real_build(tmp_path)
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+
+    for banned in ("<script", "<style", "style=", "onclick", "<details open"):
+        assert banned not in readme, f"{banned!r} is on the page; GitHub strips it"
+    summaries = re.findall(r"<summary><b>([^<]+)</b>", readme)
+    for card in content.CARDS.values():
+        assert card["title"] in summaries, f"{card['title']} has no card"
+    assert readme.count("<details>") == readme.count("</details>") == len(summaries)
+    assert readme.count("</summary>\n\n") == len(summaries), (
+        "a card has no blank line after its summary and will render as raw text")
+    pictures = readme.count("<picture>")
+    assert pictures == len(content.CARDS), "one still per card, the lead's at the top"
+    assert len(re.findall(r'<a href="[^"]+">\n<picture>', readme)) == pictures, (
+        "a picture is not a link")
+    for card in content.CARDS.values():
+        if card.get("repo"):
+            assert f"https://github.com/thomasvanpul/{card['repo']}" in readme
+
+
+def test_the_push_line_is_the_most_recent_featured_repo(tmp_path, monkeypatch):
+    """The line the daily run rewrites names the newest push, from the repo
+    list the build already fetched, and the tokened build caches it so a
+    tokenless one prints the same line."""
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    older = {"name": "older", "html_url": "https://github.com/thomasvanpul/older",
+             "default_branch": "main", "pushed_at": "2026-08-01T00:00:00Z",
+             "topics": ["profile-feature"], "archived": False, "fork": False}
+    newer = dict(older, name="newer", html_url="https://github.com/thomasvanpul/newer",
+                 pushed_at="2026-10-11T09:00:00Z")
+    out = tmp_path / "out"
+    (out / "assets").mkdir(parents=True)
+    hero_dir = _fake_hero(tmp_path)
+    with patch.object(gh, "fetch_featured_repos", return_value=[older, newer]), \
+         patch.object(gh, "fetch_profile_config", return_value=None), \
+         patch.object(gh, "fetch_contributions",
+                      return_value=_contrib([("2026-10-01", 1)])):
+        build.build(fixture_path=_write_fixture(tmp_path),
+                    orbit_path=_write_orbit(tmp_path),
+                    out_dir=out, token="fake-token", hero_dir=hero_dir)
+    readme = (out / "README.md").read_text(encoding="utf-8")
+    line = '<a href="https://github.com/thomasvanpul/newer">newer</a>, 2026-10-11.'
+    assert line in readme
+    cached = json.loads((out / "data" / "activity.json").read_text(encoding="utf-8"))
+    assert cached["name"] == "newer"
+
+    build.build(fixture_path=_write_fixture(tmp_path), orbit_path=_write_orbit(tmp_path),
+                out_dir=out, token=None, hero_dir=hero_dir)
+    assert line in (out / "README.md").read_text(encoding="utf-8"), (
+        "a tokenless build dropped the cached push line for the fixture's")
 
 
 # GitHub's profile column, as `bin/page_preview.py` renders it: max-width
@@ -326,10 +382,9 @@ PHONE_COLUMN = 390 - 32
 # draws, and 11px leaves a pixel of slack for a rasteriser's rounding.
 MIN_APPARENT_PX = 11.0
 
-# The task's ceiling for each animated file. A README image is fetched on
-# every visit and raw.githubusercontent does not stream a GIF, so the plate
-# is paid for in full before a frame shows.
-HERO_BUDGET_BYTES = 1500 * 1024
+# Ceiling per still. Each was a 1.5 MB GIF until 12 Oct; a still of the same
+# plate is about 35 KB.
+HERO_BUDGET_BYTES = 100 * 1024
 
 
 def _png_size(data: bytes) -> tuple[int, int]:
@@ -365,10 +420,9 @@ def test_the_plate_reads_on_a_phone_and_fits_the_budget(tmp_path):
         assert width == corridor.WIDTH, (
             f"{path.name} is {width} wide; the type floor was computed for "
             f"{corridor.WIDTH}")
-        if path.name.startswith("anim-"):
-            assert len(data) <= HERO_BUDGET_BYTES, (
-                f"{path.name} is {len(data) / 1024:.0f} KB, over "
-                f"{HERO_BUDGET_BYTES // 1024} KB")
+        assert len(data) <= HERO_BUDGET_BYTES, (
+            f"{path.name} is {len(data) / 1024:.0f} KB, over "
+            f"{HERO_BUDGET_BYTES // 1024} KB")
 
 
 def test_the_page_carries_its_text_as_text(tmp_path):
@@ -376,8 +430,9 @@ def test_the_page_carries_its_text_as_text(tmp_path):
 
     GitHub never sees text inside an image: not its own search, not the
     browser's find, not a copy-paste. A screen reader gets one `alt` string
-    for the whole plate. So the name, the line and the links are markdown,
-    and the alt says what the plate shows rather than naming it.
+    per plate. So the name, the line and the links are markdown, the alt
+    carries every count the still draws, and the copy has no em dashes
+    (Thomas's rule for anything written as him).
     """
     out_dir = _seed_real_build(tmp_path)
     readme = (out_dir / "README.md").read_text(encoding="utf-8")
@@ -387,8 +442,12 @@ def test_the_page_carries_its_text_as_text(tmp_path):
     for link in ("https://thomasvp.com", "linkedin.com/in/vanpulthomas",
                  "vanpulthomas@gmail.com"):
         assert link in readme, f"{link!r} is not on the page"
-    assert f'alt="{corridor.ALT[content.HERO_PICK]}"' in readme
-    assert readme.count("\n#") == 1, "more than one heading on a page of three lines"
+    alts = re.findall(r'alt="([^"]+)"', readme)
+    assert len(alts) == len(content.CARDS)
+    for alt in alts:
+        assert re.search(r"\d+ commits touching [\d,]+ files, in \d+ of 53 weeks", alt), alt
+    assert "\u2014" not in readme, "an em dash is on the page"
+    assert readme.count("\n# ") == 1, "more than one heading; cards are summaries, not headings"
 
 
 def test_vendored_tokens_match_atrium_design_when_it_is_checked_out():

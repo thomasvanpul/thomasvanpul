@@ -1,0 +1,1 @@
+cmark-gfm (GitHub's markdown library) plus a sanitiser for script, style and on* attributes; the GitHub API was not reachable

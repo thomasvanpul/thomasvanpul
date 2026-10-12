@@ -96,8 +96,20 @@ INK_GATE = 0.04
 
 # --- drawing -----------------------------------------------------------------
 
+# Menlo is the face these plates were drawn in, and it only exists on macOS.
+# Off a Mac (a cloud session, CI) the build falls back to DejaVu Sans Mono,
+# which Menlo was cut from: same advance width, near-identical glyphs. The
+# shapes differ slightly, so a plate rebuilt on a Mac will not be
+# byte-identical to one rebuilt here.
+FALLBACK = ("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf")
+
+
 def _font(size: float, bold: bool = False):
+    import os
     from PIL import ImageFont
+    if not os.path.exists(MONO) and os.path.exists(FALLBACK[bold]):
+        return ImageFont.truetype(FALLBACK[bold], int(round(size)))
     return ImageFont.truetype(MONO, int(round(size)),
                               index=BOLD if bold else REGULAR)
 
