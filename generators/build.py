@@ -55,7 +55,9 @@ DEFAULT_HERO_DIR = REPO_ROOT / "design" / "cards"
 # There is no animated stem any more, and `_write_all` sweeps any GIF left in
 # assets/ from the corridor page as an orphan.
 THEMES = ("dark", "light")
-HERO_STEMS = tuple(f"{key}-{theme}" for key in content.CARDS for theme in THEMES)
+# Cards with no corridor lane (Project Svarog) have no still.
+LANE_CARDS = tuple(key for key, card in content.CARDS.items() if card.get("lane"))
+HERO_STEMS = tuple(f"{key}-{theme}" for key in LANE_CARDS for theme in THEMES)
 
 # Profile repo coordinates (used to build raw.githubusercontent URLs in README).
 PROFILE_OWNER = "thomasvanpul"
@@ -343,6 +345,30 @@ def _latest_line(latest: dict | None) -> str | None:
             f"{latest['pushed_at'][:10]}. Updated daily by a GitHub Action.</sub>")
 
 
+def is_public(claims) -> bool:
+    """True when every row a piece of copy rests on is verified (see
+    `content.PUBLIC_CLAIMS`). Copy that names no row is not public either."""
+    return bool(claims) and all(c in content.PUBLIC_CLAIMS for c in claims)
+
+
+def public_cards() -> list[str]:
+    return [key for key, card in content.CARDS.items() if is_public(card.get("claims"))]
+
+
+def _check_public_copy(readme: str) -> None:
+    """Refuse to write a page carrying a string the register marks false."""
+    low = readme.lower()
+    hits = [s for s in content.NEVER_ON_THE_PAGE if s.lower() in low]
+    if hits:
+        raise BuildError(f"the page carries register-false copy: {hits}")
+    for key, card in content.CARDS.items():
+        if key in public_cards():
+            continue
+        for para in card["body"]:
+            if para in readme:
+                raise BuildError(f"withheld card {key!r} reached the page")
+
+
 def _card(data: dict, key: str, urls: dict[str, str], counts: dict) -> str:
     """One project, closed until a visitor opens it.
 
@@ -353,10 +379,12 @@ def _card(data: dict, key: str, urls: dict[str, str], counts: dict) -> str:
     out = ["<details>",
            f"<summary><b>{card['title']}</b> &nbsp;·&nbsp; {card['what']}</summary>", ""]
     repo = card.get("repo")
-    href = _repo_url(data, repo) if repo else None
-    if key != content.LEAD_CARD:
+    repo_href = _repo_url(data, repo) if repo else None
+    case = card.get("case")
+    if card.get("lane") and key != content.LEAD_CARD:
         out += [still_picture(urls[f"{key}-dark"], urls[f"{key}-light"],
-                              card_alt(key, counts[key], counts["_field"]), href), ""]
+                              card_alt(key, counts[key], counts["_field"]),
+                              case or repo_href), ""]
     for para in card["body"]:
         out += [para, ""]
     if card.get("table"):
@@ -364,9 +392,11 @@ def _card(data: dict, key: str, urls: dict[str, str], counts: dict) -> str:
         out += [f"| {head[0]} | {head[1]} |", "| --- | --- |"]
         out += [f"| {k} | {v} |" for k, v in card["table"]]
         out.append("")
+    if case:
+        out += [f"Case page: [{case.split('://', 1)[1].removeprefix('www.')}]({case})", ""]
     if repo:
         note = f": {card['repo_note']}" if card.get("repo_note") else ""
-        out += [f"Repo: [{data['owner']}/{repo}]({href}){note}", ""]
+        out += [f"Repo: [{data['owner']}/{repo}]({repo_href}){note}", ""]
     else:
         out += [card["links"], ""]
     out += ["</details>", ""]
@@ -405,16 +435,25 @@ def _render_readme(data: dict, filenames: dict[str, str],
     latest = _latest_line(data.get("latest"))
     if latest:
         lines += [latest, ""]
-    for key in content.CARDS:
+    for key in public_cards():
         lines.append(_card(data, key, urls, counts))
-    lines.append(_list_card(
-        content.ALSO_RUNNING_HEADING, "four smaller things",
-        [f"- **{name}**: {prose}" for name, prose in content.ALSO_RUNNING]))
+    also = [(n, p) for n, p, claims in content.ALSO_RUNNING if is_public(claims)]
+    if also:
+        lines.append(_list_card(
+            content.ALSO_RUNNING_HEADING, f"{_COUNT_WORDS[len(also)]} smaller things"
+            if len(also) > 1 else "one smaller thing",
+            [f"- **{name}**: {prose}" for name, prose in also]))
     lines.append(_list_card(
         content.STACK_HEADING, "what I build with",
         ["| | |", "| --- | --- |",
-         *[f"| {k} | {v} |" for k, v in content.STACK_TABLE]]))
-    return "\n".join(lines)
+         *[f"| {k} | {v} |" for k, v, claims in content.STACK_TABLE
+           if is_public(claims)]]))
+    readme = "\n".join(lines)
+    _check_public_copy(readme)
+    return readme
+
+
+_COUNT_WORDS = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six"}
 
 
 def _card_counts(hero_dir: Path) -> dict:
@@ -422,7 +461,7 @@ def _card_counts(hero_dir: Path) -> dict:
     path = hero_dir / "cards.json"
     try:
         doc = json.loads(path.read_text(encoding="utf-8"))
-        return {key: doc[key] for key in (*content.CARDS, "_field")}
+        return {key: doc[key] for key in (*LANE_CARDS, "_field")}
     except (OSError, json.JSONDecodeError, KeyError) as e:
         raise BuildError(f"cannot read {path}: {e}; run `python3 bin/cards.py`") from e
 

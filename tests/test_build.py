@@ -167,7 +167,7 @@ def _contrib(days_spec: list[tuple[str, int]]) -> dict:
 
 
 FAKE_HERO = {f"{key}-{theme}": ("png", f"\x89PNG {key} {theme}".encode())
-             for key in content.CARDS for theme in ("dark", "light")}
+             for key in build.LANE_CARDS for theme in ("dark", "light")}
 
 
 def _fake_hero(tmp: Path) -> Path:
@@ -179,7 +179,7 @@ def _fake_hero(tmp: Path) -> Path:
         (d / f"{stem}.0000000.{ext}").write_bytes(body)
     manifest = {"_field": {"from": "2025-09-14", "to": "2026-09-19"}}
     manifest.update({key: {"commits": 1, "files_touched": 2, "weeks": 3}
-                     for key in content.CARDS})
+                     for key in build.LANE_CARDS})
     (d / "cards.json").write_text(json.dumps(manifest), encoding="utf-8")
     return d
 
@@ -327,18 +327,27 @@ def test_the_page_is_something_a_visitor_opens_and_clicks(tmp_path):
     for banned in ("<script", "<style", "style=", "onclick", "<details open"):
         assert banned not in readme, f"{banned!r} is on the page; GitHub strips it"
     summaries = re.findall(r"<summary><b>([^<]+)</b>", readme)
-    for card in content.CARDS.values():
-        assert card["title"] in summaries, f"{card['title']} has no card"
+    shown = build.public_cards()
+    for key in shown:
+        assert content.CARDS[key]["title"] in summaries, f"{key} has no card"
     assert readme.count("<details>") == readme.count("</details>") == len(summaries)
     assert readme.count("</summary>\n\n") == len(summaries), (
         "a card has no blank line after its summary and will render as raw text")
     pictures = readme.count("<picture>")
-    assert pictures == len(content.CARDS), "one still per card, the lead's at the top"
+    stills = 1 + sum(1 for key in shown
+                     if content.CARDS[key].get("lane") and key != content.LEAD_CARD)
+    assert pictures == stills, "one still per shown card with a lane, the lead's at the top"
     assert len(re.findall(r'<a href="[^"]+">\n<picture>', readme)) == pictures, (
         "a picture is not a link")
-    for card in content.CARDS.values():
+    for key in shown:
+        card = content.CARDS[key]
         if card.get("repo"):
             assert f"https://github.com/thomasvanpul/{card['repo']}" in readme
+        if card.get("case"):
+            assert card["case"].startswith("https://www.thomasvp.com/work/")
+            assert f'<a href="{card["case"]}">' in readme or not card.get("lane"), (
+                f"{key}'s still does not open its case page")
+            assert f"]({card['case']})" in readme, f"{key} has no case-page link"
 
 
 def test_the_push_line_is_the_most_recent_featured_repo(tmp_path, monkeypatch):
@@ -443,7 +452,7 @@ def test_the_page_carries_its_text_as_text(tmp_path):
                  "vanpulthomas@gmail.com"):
         assert link in readme, f"{link!r} is not on the page"
     alts = re.findall(r'alt="([^"]+)"', readme)
-    assert len(alts) == len(content.CARDS)
+    assert len(alts) == readme.count("<picture>")
     for alt in alts:
         assert re.search(r"\d+ commits touching [\d,]+ files, in \d+ of 53 weeks", alt), alt
     assert "\u2014" not in readme, "an em dash is on the page"
@@ -478,3 +487,47 @@ def test_vendored_tokens_match_atrium_design_when_it_is_checked_out():
     )
 
 
+
+
+def test_only_verified_claims_reach_the_page(tmp_path):
+    """Thomas's rule for anything public: a claim about him appears only if
+    its row in the vault's Atlas/Verified-Claims.md is `verified: true`.
+
+    `content.PUBLIC_CLAIMS` mirrors those rows. Every card, list item, stack
+    row, the line under his name and the links name the rows they rest on;
+    anything resting on a row outside the mirror stays off the page, and the
+    strings the register marks false never appear at all. Atrium is the case
+    this pins today: `atrium-build` and `atrium-drift` are TODO, so its card
+    is withheld while its still (commit data, not a claim) stays on top.
+    """
+    out_dir = _seed_real_build(tmp_path)
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+    low = readme.lower()
+
+    assert build.is_public(content.LINE_CLAIMS) and content.LINE in readme
+    assert build.is_public(content.FOOTER_LINKS_CLAIMS)
+    for key, card in content.CARDS.items():
+        assert card.get("claims"), f"card {key} names no claim rows"
+        shown = f"<summary><b>{card['title']}</b>" in readme
+        assert shown == build.is_public(card["claims"]), (
+            f"card {key}: shown={shown} but its rows are "
+            f"{[c for c in card['claims'] if c not in content.PUBLIC_CLAIMS]} unverified")
+        if not shown:
+            for para in card["body"]:
+                assert para not in readme, f"withheld {key} copy reached the page"
+    for name, prose, claims in content.ALSO_RUNNING:
+        assert claims, f"{name} names no claim rows"
+        assert (prose in readme) == build.is_public(claims), name
+    for k, v, claims in content.STACK_TABLE:
+        assert claims, f"stack row {k} names no claim rows"
+        assert (f"| {k} | {v} |" in readme) == build.is_public(claims), k
+    for banned in content.NEVER_ON_THE_PAGE:
+        assert banned.lower() not in low, f"register-false {banned!r} is on the page"
+
+    # The build itself refuses, so a hand edit to content.py cannot ship one.
+    with pytest.raises(build.BuildError, match="register-false"):
+        build._check_public_copy("Enclosure, board, firmware and app.")
+    withheld = [k for k in content.CARDS if k not in build.public_cards()]
+    for key in withheld:
+        with pytest.raises(build.BuildError, match=f"withheld card '{key}'"):
+            build._check_public_copy(content.CARDS[key]["body"][0])

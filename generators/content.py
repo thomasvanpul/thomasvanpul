@@ -38,8 +38,64 @@ HERO_NAME = "THOMAS VAN PUL"
 # builds them. The alt text lives with the plate, in `corridor.ALT`.
 HERO_PICK = "flight"
 NAME = "Thomas van Pul"
-LINE = ("Design Engineering at Imperial College London. "
-        "I build hardware and the software that runs it.")
+# 5 Nov 2026: the second sentence was "I build hardware and the software that
+# runs it", which no row in the vault's Atlas/Verified-Claims.md backs. This is
+# the line thomasvp.com kept after its 6 Aug audit, which the register records.
+LINE = ("MEng Design Engineering at Imperial College London. "
+        "I build instruments, then use them.")
+LINE_CLAIMS = ("edu-meng", "site-intro")
+
+# --- what this page may say about Thomas, 5 Nov 2026 ---------------------------
+#
+# Only claims marked `verified: true` in the vault's Atlas/Verified-Claims.md
+# may appear on a public page. Every card, list item and stack row below names
+# the rows it rests on, and `generators/build.py` leaves out anything resting on
+# a row that is not in this dict, so a claim cannot reach the page by being
+# typed into a card. To bring a withheld card back (Atrium, IRIS), Thomas flips
+# its rows in the vault and the ids are added here; nothing else changes.
+# Each value says where the row is and when it was confirmed.
+PUBLIC_CLAIMS = {
+    "edu-meng": "MEng Design Engineering, Imperial College London (2025-2029); Thomas 2026-08-04",
+    "site-intro": "thomasvp.com intro kept after the 2026-08-06 audit: "
+                  "'Design engineering at Imperial. I build instruments, then use them.'",
+    "handle-linkedin": "linkedin.com/in/vanpulthomas; Thomas 2026-08-05",
+    "bb-uplyft": "BlueBand created at the upLYFT Wearable Tech Hackathon, Imperial; "
+                 "team placed second; Thomas 2026-09-16",
+    "bb-uplyft-date": "that hackathon was March 2026; Thomas 2026-09-16",
+    "bb-build": "board in KiCad (two-layer ESP32-S3, custom printed), enclosure in "
+                "CadQuery, the site; modular sports wristband; team working towards "
+                "a launch; not open hardware; Thomas 2026-09-16, corrected 2026-10-13",
+    "num-headline": "React, Node.js, PostgreSQL on Vercel; Plaid; Yahoo Finance; "
+                    "Thomas 2026-08-04 (sweep)",
+    "num-daily-use": "latency, API rate limits, dirty data, cache invalidation in "
+                     "daily use; Thomas 2026-08-04 (sweep)",
+    "icss-strum-booms": "designed and 3D-printed moulds for four carbon-fibre booms, "
+                        "each over 2 m (Project Svarog); Thomas 2026-08-18",
+    "icss-strum-doors": "designed carbon-fibre-reinforced doors (Project Svarog); "
+                        "Thomas 2026-08-18",
+    "ep-role": "interstellarsanctuary.com built with an EdgeProp employee, framed as "
+               "a collaboration; Thomas 2026-08-05",
+    "interstellar-dates": "that collaboration ran July to September 2026; Thomas 2026-09-03",
+    "research-hfq": "with Dr Nan Li at the Dyson School since August 2026, HFQ forming "
+                    "across Al, steel, Ti and FML; Thomas 2026-08-05",
+    "urop-naming": "the work may be called a UROP; Thomas 2026-09-16",
+    "skl-prog": "Python, JavaScript, SQL, MATLAB; Thomas 2026-08-04 (sweep)",
+    "skl-eng": "Fusion 360, Ansys FEA, SimScale CFD, TIG welding, composite tooling; "
+               "Thomas 2026-08-04, extended 2026-08-23",
+}
+
+# Strings the register marks false or do-not-restore, plus the corrections in
+# Thomas's own profile. None may appear on the page in any card, shown or not.
+NEVER_ON_THE_PAGE = (
+    "firmware",            # bb firmware: no firmware exists (2026-08-31)
+    "open hardware", "open-hardware",  # bb-build correction 2026-10-13
+    "one person",          # BlueBand is a team (bb-build)
+    "First Class", "First-Class", "predicted First",  # edu-meng-nc-first-class
+    "co-lead",             # icss-rocketry-colead is not a verified role
+    "60+ teams", "200+ teams",  # falsified / unsourced field sizes
+    "patent",              # track-bike patent pending is FALSE
+    "licensing is settled",  # no row says why the site is gated
+)
 
 # --- the interactive page, 12 Oct 2026 ---------------------------------------
 #
@@ -48,11 +104,18 @@ LINE = ("Design Engineering at Imperial College London. "
 # click: each project is a <details> card, each picture is a link, and one
 # line under the links is rewritten by the daily Action from real push data.
 #
-# Every sentence below is copied from the prose that was on the page before
-# 24 Sep (FEATURED, ATRIUM, ALSO_RUNNING, STACK_TABLE further down), with the
-# em dashes taken out and nothing added. `lane` names the corridor lane whose
-# still `bin/cards.py` draws for the card; `repo` is the public repository the
-# picture and the repo link go to, None where the work is private.
+# Until 5 Nov every sentence below was copied from the prose that was on the
+# page before 24 Sep. On 5 Nov each card was checked against the vault's
+# Atlas/Verified-Claims.md and rewritten to the verified wording where the old
+# one went further: BlueBand's "firmware" and "one person doing the whole
+# chain" are both contradicted there (no firmware exists; BlueBand is a team).
+#
+# `lane` names the corridor lane whose still `bin/cards.py` draws for the card,
+# None for a card with no lane. `repo` is the public repository, None where the
+# work is private. `case` is the card's case page on thomasvp.com; the still
+# links there when it exists, and to the repo otherwise. `claims` are the
+# PUBLIC_CLAIMS rows every line of the card rests on: a card with any row
+# missing from PUBLIC_CLAIMS is left off the page.
 CARDS = {
     "atrium": {
         "lane": "ATRIUM · SURFACE",
@@ -60,6 +123,11 @@ CARDS = {
         "title": "Atrium",
         "what": "a spatial desktop for macOS, in Swift and Metal",
         "repo": None,
+        # Withheld 5 Nov 2026: `atrium-build` and `atrium-drift` are TODO in the
+        # register, awaiting Thomas since 2026-09-16. The still stays at the
+        # top of the page (it is drawn from commit data, not from a claim); the
+        # card returns when both rows are flipped and added to PUBLIC_CLAIMS.
+        "claims": ("atrium-build", "atrium-drift"),
         "body": [
             "It draws the machine's own record as a navigable three-dimensional "
             "field: every mark a real event, depth is recency.",
@@ -85,24 +153,48 @@ CARDS = {
         "lane": "BLUEBAND",
         "lane_alt": "blueband-concept",
         "title": "BlueBand",
-        "what": "a wearable motion band, in development",
+        "what": "a modular sports wristband, in development",
         "repo": "blueband-concept",
+        "case": "https://www.thomasvp.com/work/blueband",
+        "claims": ("bb-uplyft", "bb-uplyft-date", "bb-build"),
         "body": [
-            "Enclosure, board, firmware and app, one person doing the whole chain.",
+            "Created at the upLYFT Wearable Tech Hackathon at Imperial in March 2026, "
+            "where our team placed second.",
+            "After the hackathon I designed and routed its two-layer ESP32-S3 board in "
+            "KiCad and had it custom printed, built the enclosure in CadQuery, and "
+            "built the site. The team is working towards a launch.",
         ],
-        "repo_note": "concept model and the render pipeline. Web and CAD repos are private.",
+        "repo_note": "concept model and the render pipeline. Board and enclosure "
+                     "files are private.",
     },
     "numeris": {
         "lane": "NUMERIS",
         "lane_alt": "Finance-Tracker",
         "title": "Numeris",
-        "what": "a finance app I use daily",
+        "what": "a portfolio tracker, in daily use",
         "repo": "Finance-Tracker",
+        "case": "https://www.thomasvp.com/work/numeris",
+        "claims": ("num-headline", "num-daily-use"),
         "body": [
-            "Plaid in, market data alongside it, normalised into Postgres, out "
-            "through a typed API. Daily use is what makes it real.",
+            "A full-stack build: React, Node.js and PostgreSQL on Vercel, with Plaid "
+            "for bank connections and Yahoo Finance for market data.",
+            "Daily use is where the real problems came from: latency, API rate "
+            "limits, dirty data and cache invalidation.",
         ],
         "repo_note": None,
+    },
+    "svarog": {
+        "lane": None,
+        "title": "Project Svarog",
+        "what": "Imperial College Space Society's satellite project",
+        "repo": None,
+        "case": "https://www.thomasvp.com/work/svarog",
+        "claims": ("icss-strum-booms", "icss-strum-doors"),
+        "body": [
+            "I designed and 3D-printed the moulds for four carbon-fibre booms, each "
+            "over two metres long, and designed carbon-fibre-reinforced doors.",
+        ],
+        "links": "Society project; no public repo.",
     },
 }
 
@@ -239,30 +331,26 @@ ATRIUM = {
     "figures_aria": "Atrium, measured: 18,470 lines of Swift across 75 files; 418 assertions covering 38% of the codebase; 218,016 real events from 31 repositories; 10 MB resident at 0% idle CPU.",
 }
 
-ALSO_RUNNING_HEADING = "Also running"
+ALSO_RUNNING_HEADING = "Also"
 
-# Ordered list of items in the "Also running" section. Each entry is
-# (bold_name, body_prose).
-# One sentence each, down from two or three. These are the things that are
-# *not* the argument of the page, and four three-line entries in a row was the
-# longest unbroken run of prose on it.
+# (bold_name, body_prose, claims). Rewritten 5 Nov 2026 against the register:
+# "Air defence economics" and "IRIS" are gone because no row backs the first
+# and `iris-daemon` is TODO; Interstellar Sanctuary lost "while licensing is
+# settled", which nothing records, and gained its verified dates; the research
+# line uses the name `urop-naming` allows.
 ALSO_RUNNING = [
     (
         "Interstellar Sanctuary",
-        "Malaysia property launch map with an EdgeProp collaborator, "
-        "[password-gated](https://interstellarsanctuary.com) while licensing is settled.",
+        "a Peninsular Malaysia property-launch map, built with an EdgeProp "
+        "collaborator, July to September 2026. "
+        "[Password-gated](https://interstellarsanctuary.com).",
+        ("ep-role", "interstellar-dates"),
     ),
     (
-        "HFQ forming research",
-        "Hot Form Quench forming with Dr Nan Li at the Dyson School, remote since Aug 2026.",
-    ),
-    (
-        "Air defence economics",
-        "a self-directed paper; every figure regenerable from a CSV by one script.",
-    ),
-    (
-        "IRIS",
-        "an always-on personal assistant daemon on macOS. Private repo.",
+        "UROP",
+        "with Dr Nan Li at the Dyson School since August 2026, on Hot Form Quench "
+        "forming across aluminium, steel, titanium and fibre metal laminates.",
+        ("research-hfq", "urop-naming"),
     ),
 ]
 
@@ -277,10 +365,16 @@ STACK_HEADING = "Stack"
 # Was one line of twelve names in three groups separated by dots, which is a
 # clump with punctuation in it: the groups were there and unreadable. Same
 # twelve names, three rows, nothing added and nothing removed.
+# 5 Nov 2026: each row now lists only tools a verified row names. TypeScript,
+# "FDM printing" and "composite layup" had none; JavaScript, SQL, MATLAB,
+# CadQuery, 3D printing and "composite tooling" (the register's own words) do.
 STACK_TABLE = [
-    ("Software", "Python · TypeScript · React · Node · PostgreSQL"),
-    ("Simulation & CAD", "Fusion 360 · Ansys FEA · SimScale CFD · KiCad"),
-    ("Workshop", "TIG welding · FDM printing · composite layup"),
+    ("Software", "Python · JavaScript · SQL · React · Node.js · PostgreSQL · MATLAB",
+     ("skl-prog", "num-headline")),
+    ("Simulation & CAD", "Fusion 360 · Ansys FEA · SimScale CFD · KiCad · CadQuery",
+     ("skl-eng", "bb-build")),
+    ("Workshop", "TIG welding · 3D printing · composite tooling",
+     ("skl-eng", "icss-strum-booms")),
 ]
 
 FOOTER_SUB = (
@@ -288,6 +382,7 @@ FOOTER_SUB = (
     "&nbsp;·&nbsp; Dutch · Penang / London"
 )
 
+FOOTER_LINKS_CLAIMS = ("handle-linkedin",)
 FOOTER_LINKS = (
     "[thomasvp.com](https://thomasvp.com) &nbsp;·&nbsp; "
     "[linkedin.com/in/vanpulthomas](https://www.linkedin.com/in/vanpulthomas) &nbsp;·&nbsp; "

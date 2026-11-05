@@ -306,14 +306,14 @@ def _readme(name: str, plan: dict, regions: list[dict], tails: dict,
         lines.append(_img(_url(filenames[tails["also"]]),
                           "A quieter region of the same lattice frame") + "\n")
     lines.append(f"### {content.ALSO_RUNNING_HEADING}\n")
-    for title, prose in content.ALSO_RUNNING:
+    for title, prose, _claims in content.ALSO_RUNNING:
         lines.append(f"**{title}** &nbsp;·&nbsp; {prose}\n")
 
     if tails.get("stack"):
         lines.append(_img(_url(filenames[tails["stack"]]),
                           "A quieter region of the same lattice frame") + "\n")
     lines.append(f"### {content.STACK_HEADING}\n")
-    lines.append(_table(content.STACK_TABLE) + "\n")
+    lines.append(_table([(k, v) for k, v, _claims in content.STACK_TABLE]) + "\n")
 
     lines.append('<div align="center">\n')
     lines.append(

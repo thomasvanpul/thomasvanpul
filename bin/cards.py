@@ -41,6 +41,8 @@ def main() -> int:
     manifest = {"_field": {"from": field["weeks"][0]["start"],
                            "to": field["generated"]}}
     for key, card in content.CARDS.items():
+        if not card.get("lane"):
+            continue
         entry = {"lane": card["lane"], "files": {}}
         for theme in corridor.THEMES:
             blob, frame, lane = corridor.lane_still("flight", theme, card["lane"], LAG)
