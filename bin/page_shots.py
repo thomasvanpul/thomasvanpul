@@ -4,6 +4,11 @@ themes, every card closed and every card open.
 
     python3 bin/page_shots.py                     # README.md -> design/interactive/after/
     python3 bin/page_shots.py --rev HEAD~1 --out design/interactive/before
+    python3 bin/page_shots.py --html github.html  # HTML GitHub's API already returned
+
+`--html` is for a session the API refuses: render on a machine where
+`gh api --method POST /markdown -f mode=gfm -F text=@README.md` works, bring
+the HTML back, and photograph exactly what GitHub produced.
 
 How close this is to GitHub
 ---------------------------
@@ -100,6 +105,8 @@ def page(body: str, theme: str, column: int) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--rev", help="photograph README.md as of this git revision")
+    ap.add_argument("--html", type=Path,
+                    help="photograph this HTML, already rendered by GitHub's markdown API")
     ap.add_argument("--out", type=Path, default=ROOT / "design" / "interactive" / "after")
     args = ap.parse_args()
     args.out = args.out.resolve()
@@ -107,7 +114,11 @@ def main() -> int:
     md = (subprocess.run(["git", "show", f"{args.rev}:README.md"], cwd=ROOT, check=True,
                          capture_output=True, text=True).stdout
           if args.rev else (ROOT / "README.md").read_text(encoding="utf-8"))
-    html, how = render(md)
+    if args.html:
+        html = args.html.read_text(encoding="utf-8")
+        how = f"GitHub markdown API, rendered elsewhere and read from {args.html.name}"
+    else:
+        html, how = render(md)
     body = localise(html)
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "render.txt").write_text(how + "\n", encoding="utf-8")
