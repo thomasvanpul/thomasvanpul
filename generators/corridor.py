@@ -143,8 +143,13 @@ FLOOR = MIN_APPARENT_PX * WIDTH / PHONE_COLUMN
 # the field is the same field, the camera covers the same year, the steps
 # between frames are 8% longer. At 13fps the loop is 7.4s, so a reader sees
 # the join about twice in the twenty seconds `bin/hero.py` films.
-FRAMES = 96
-FPS = 13
+# 2026-11-09: 88 frames at 12 fps (was 96 at 13, 7.4 s; now 7.3 s). The
+# refreshed year has more lit weeks, so each frame changes more pixels and the
+# dark plate came to 1556 KB against the 1500 KB budget in tests/test_build.py.
+# A GIF here costs by changed pixels per frame, so fewer frames is the lever;
+# fewer colours barely moved it (20: 1528 KB, 16: 1513 KB on light).
+FRAMES = 88
+FPS = 12
 WEEKS = 53
 ROWS_PER_WEEK = 2
 

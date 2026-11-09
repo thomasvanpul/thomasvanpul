@@ -38,8 +38,11 @@ HERO_NAME = "THOMAS VAN PUL"
 # builds them. The alt text lives with the plate, in `corridor.ALT`.
 HERO_PICK = "flight"
 NAME = "Thomas van Pul"
-LINE = ("Design Engineering at Imperial College London. "
-        "I build hardware and the software that runs it.")
+# 2026-11-09: the second sentence ("I build hardware and the software that
+# runs it.") is gone. No Verified-Claims row backs it: the BlueBand rows cover
+# one board and one prototype, and the Atrium rows are verified:false.
+# "MEng Design Engineering, Imperial" is `edu-meng`, verified true.
+LINE = "Design Engineering at Imperial College London."
 
 HERO_ARIA = "Thomas van Pul, Design Engineering at Imperial College London"
 
@@ -221,8 +224,7 @@ FOOTER_SUB = (
 
 FOOTER_LINKS = (
     "[thomasvp.com](https://thomasvp.com) &nbsp;·&nbsp; "
-    "[linkedin.com/in/vanpulthomas](https://www.linkedin.com/in/vanpulthomas) &nbsp;·&nbsp; "
-    "`vanpulthomas@gmail.com`"
+    "[linkedin.com/in/vanpulthomas](https://www.linkedin.com/in/vanpulthomas)"
 )
 
 # Showroom sources, keyed by featured repo name. `cols` sets the halftone

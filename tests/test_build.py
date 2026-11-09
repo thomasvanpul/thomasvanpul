@@ -384,9 +384,12 @@ def test_the_page_carries_its_text_as_text(tmp_path):
 
     assert f"# {content.NAME}\n" in readme
     assert content.LINE in readme
-    for link in ("https://thomasvp.com", "linkedin.com/in/vanpulthomas",
-                 "vanpulthomas@gmail.com"):
+    for link in ("https://thomasvp.com", "linkedin.com/in/vanpulthomas"):
         assert link in readme, f"{link!r} is not on the page"
+    # 2026-11-09: the personal email and the "I build hardware..." sentence
+    # were removed because Atlas/Verified-Claims has no verified row for them.
+    assert "@gmail.com" not in readme
+    assert "I build hardware" not in readme
     assert f'alt="{corridor.ALT[content.HERO_PICK]}"' in readme
     assert readme.count("\n#") == 1, "more than one heading on a page of three lines"
 
