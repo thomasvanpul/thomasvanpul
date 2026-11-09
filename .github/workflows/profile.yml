@@ -37,10 +37,10 @@ jobs:
 
       - name: Install build dependencies
         # Pillow is used only by generators/showroom.py, to reduce the
-          # BlueBand render to the luminance grid the halftone is drawn from.
-          # The build degrades to the committed grid without it, so this is a
-          # nice-to-have rather than a hard dependency.
-          run: pip install --upgrade pip PyYAML pytest Pillow
+        # BlueBand render to the luminance grid the halftone is drawn from.
+        # The build degrades to the committed grid without it, so this is a
+        # nice-to-have rather than a hard dependency.
+        run: pip install --upgrade pip PyYAML pytest Pillow
 
       - name: Run tests (unit + live API smoke)
         env:
